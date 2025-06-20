@@ -1,13 +1,70 @@
 Backend flask application using postgresql.
 
+Follow the instructions on this link to install and manage the python versions with pyenv.
+https://realpython.com/intro-to-pyenv/
+
+Python version used for this repo is 3.8.13
+
+To set a specific python version to your local application:
+
+```
+pyenv local 3.8.13
+```
+
+To make sure the application is using the right version:
+
+```
+pyenv versions
+```
+
+Then install pipenv:
+
+```
+pip install pipenv
+```
+
+Then install the dependencies from this repo:
+
+```
+pipenv install
+```
+
+Change the SQLALCHEMY_DATABASE_URI value to in the config.py file:
+Note: This is an example string. Change the username, password, and database name to your local postgresql login info.
+
+```
+'postgresql://myuser:mypassword@localhost:5432/mydatabase'
+```
+
+Then run:
+
+```
+pipenv shell
+```
+
+Then run this command to start the application:
+
+```
+python app.py
+```
+
+Note: The super basic one from curriculum is:
+
+```
+export FLASK_APP=app.py
+export FLASK_RUN_PORT=5555
+flask run
+```
+
 After installing packages, to use flask session object for cookies, do the following:
 
 1. Create a .env file in the root directory
-2. Create an enviromental variable and set it equal to anything you want. You can also generate a key by running the following in the ubuntu terminal. Set the results to your variable. 
+2. Create an enviromental variable and set it equal to anything you want. You can also generate a key by running the following in the ubuntu terminal. Set the results to your variable.
 
 ```
 python -c 'import os; print(os.urandom(16))'
 ```
+
 3. In the following line add the variable name like so:
 
 ```
@@ -16,7 +73,7 @@ app.secret_key= os.getenv('YOUR ENVIROMENT VARIABLE GOES HERE')
 
 Assuming postgresql is installed and ready to use, to start working on project:
 
-1. Login and start postgresql server in one ubuntu terminal 
+1. Login and start postgresql server in one ubuntu terminal
 
 Note: postgresql is a database server seperate from the flask application server. When starting the database locally, you can start it from any root user in the ubuntu terminal. It doesn't need to be at the root of the projects directory but that is okay too.
 
@@ -24,6 +81,7 @@ Note: postgresql is a database server seperate from the flask application server
 sudo service postgresql start
 psql -U username -d database_name
 ```
+
 Leave postgres terminal running
 
 2. Start the flask application in another ubuntu terminal in the project root directory
@@ -35,40 +93,43 @@ pipenv shell
 python app.py
 ```
 
-To successfully seed the data when importing all the modules, running the regular 
+To successfully seed the data when importing all the modules, running the regular
+
 ```
 python seed/species.py
-``` 
+```
 
-command will throw a "No module named config" error. To avoid this run the seed files in the seed folder using the following command: 
+command will throw a "No module named config" error. To avoid this run the seed files in the seed folder using the following command:
 
 ```
 python -m seed.species # to seed species data
-or 
-python -m seed.classifications # to seed classification data 
+or
+python -m seed.classifications # to seed classification data
 
 #etc
 ```
 
 # Marshmallow
 
-Note: When creating a new schema for a model and a nested model is used, to avoid import issues pass the name of the schema as a string and add it to the __init__.py file in the marshmallow_schema folder
-
+Note: When creating a new schema for a model and a nested model is used, to avoid import issues pass the name of the schema as a string and add it to the **init**.py file in the marshmallow_schema folder
 
 # Building a model
 
-1. Build the model 
+1. Build the model
 2. Seed the database
 3. Create Marshmallow schema for model
 4. Test marshmallow serialized data in a route
 
 # Building Routes
+
 When building protected routes, makes sure to add an endpoint (api.add_resource(Resource, '/resource', endpoint='resource'))and add that name as a string in the protected_routes array that is in the authenticate.py file in utils folder
 
 ### Creating Routes
+
 when creating a new route script/file, it needs to be added to the routes.py file to establish the connection. All routes are being access through the routes.py file.
 
 ## POSTGRES
+
 To reset table primary key to 1:
 
 ```
