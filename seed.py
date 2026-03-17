@@ -3,6 +3,7 @@
 # Standard library imports
 from random import randint, choice as rc
 import random
+
 # Remote library imports
 from faker import Faker
 
@@ -10,57 +11,58 @@ from faker import Faker
 from app import app
 from config import db
 
-
-from seed import seed_medications_table
-
 if __name__ == '__main__':
-  pass
-  # fake = Faker()
-  # with app.app_context():
-  #   print("Starting seed...")
-  #   # Seed code goes here!
-  #   print('Deleting all records...')
-  #   User.query.delete()
+  print("Starting seed...")
 
-#USERS FAKE DATA
-    # users = []
-    # usernames = []
-    # for i in range(5):
-    #   username = fake.first_name()
-    #   email = f'{fake.last_name()}@{fake.domain_name()}'
-    #   #this while is to check if a username already exist
-    #   while username in usernames:
-    #       username = fake.first_name()
-    #   usernames.append(username)
-      
-    #   user = User(
-    #       name=fake.name(),
-    #       username=username,
-    #       email=email
-    #       )
-      
-    #   user.password_hash = user.username + 'password'
+  # Base tables (no dependencies)
+  print("Seeding classifications...")
+  import seed.classification.classification
 
-    #   users.append(user)
-    
-    # db.session.add_all(users)
-    # db.session.commit()
+  print("Seeding species...")
+  import seed.species.species
 
-#SPECIES 
+  print("Seeding illnesses...")
+  import seed.illness.illness
 
+  print("Seeding medications...")
+  import seed.medication.medication
 
-#CLASSIFICATIONS
-    # classifications = Classification(classification='mammal')
-    # db.session.add(classifications)
-    # db.session.commit()
+  print("Seeding symptoms...")
+  import seed.symptom.symptom
 
-    # classifications = Classification(classification='reptile')
-    # db.session.add(classifications)
-    # db.session.commit()
+  print("Seeding products...")
+  import seed.product.product
 
-#SPECIES-CLASSIFICATION
-    # species_classification = SpeciesClassification(classification_id=1, species_id=2)
-    # db.session.add(species_classification)
-    # db.session.commit()
+  # Association tables (depend on base tables)
+  print("Seeding species classifications...")
+  import seed.speciesclassification.species_classification
 
-print('Complete.')
+  print("Seeding illness classifications...")
+  import seed.illnessclassification.illness_classification
+
+  print("Seeding illness symptoms...")
+  import seed.illnesssymptom.illness_symptom
+
+  print("Seeding illness medications...")
+  import seed.illnessmedication.illness_medication
+
+  print("Seeding illness products...")
+  import seed.illnessproduct.illness_product
+
+  print("Seeding symptom classifications...")
+  import seed.symptomclassification.symptom_classification
+
+  # User-dependent tables
+  print("Seeding users...")
+  import seed.user.user
+
+  print("Seeding pets...")
+  import seed.pet.pet
+
+  print("Seeding pet symptoms...")
+  import seed.petsymptom.pet_symptom
+
+  print("Seeding cart...")
+  import seed.cart.cart
+
+  print("Seeding complete.")
