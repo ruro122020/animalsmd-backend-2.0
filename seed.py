@@ -11,8 +11,18 @@ from faker import Faker
 from app import app
 from config import db
 
+def clear_database():
+  """Delete all data from all tables and restart identity sequences."""
+  with app.app_context():
+    print("Clearing database...")
+    db.session.execute(db.text("TRUNCATE TABLE carts, petsymptoms, pets, users, symptomsclassifications, illnessesproducts, illnessesmedications, illnessessymptoms, illnessesclassifications, speciesclassifications, products, symptoms, medications, illnesses, species, classifications RESTART IDENTITY CASCADE"))
+    db.session.commit()
+    print("Database cleared.")
+
 if __name__ == '__main__':
   print("Starting seed...")
+
+  clear_database()
 
   # Base tables (no dependencies)
   print("Seeding classifications...")
