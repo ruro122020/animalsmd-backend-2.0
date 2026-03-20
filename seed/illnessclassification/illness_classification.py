@@ -16,7 +16,6 @@ def seed_illness_classification():
         illness_exist = IllnessClassification.query.filter_by(illness_id = illness.id ).first()
         if not illness_exist:
           #create a row in IllnessClassifications with the illness id and classification id
-          # IllnessClassification.create_row(illness, classification)  
-          pass
+          IllnessClassification.create_row(illness, classification)
 
 seed_illness_classification()  
