@@ -60,6 +60,6 @@ class SpeciesByType(Resource):
       "classification_id": classification_inst.id
     }
     
-    return {"status": "success", "data": response_obj}, 200
+    return response_obj, 200
 
 api.add_resource(SpeciesByType, '/species/<type_name>')

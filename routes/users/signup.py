@@ -21,7 +21,10 @@ class Signup(Resource):
       session['user_id'] = user.id
       return user_schema.dump(user), 201
     except IntegrityError:
+       db.session.rollback()
        return {'error': 'Unproccessable Entity'}, 422
+    except ValueError as e:
+       return {'error': str(e)}, 422
     
 
 
