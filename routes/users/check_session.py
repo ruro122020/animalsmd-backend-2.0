@@ -9,7 +9,7 @@ class CheckSession(Resource):
     if session.get('user_id'):
       user = User.query.filter(User.id == session.get('user_id')).first()
       return user_schema.dump(user), 200
-    return {}, 401
+    return {"error": "Not logged in"}, 401
   
 
 api.add_resource(CheckSession, '/check_session')

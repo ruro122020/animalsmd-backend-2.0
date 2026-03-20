@@ -9,9 +9,8 @@ class SpeciesResource(Resource):
   def get(self):
     species = Species.query.all()
     if not species:
-      return {"message": "No species found"}, 404
-    print("species from db", species)
-    return {"status": "success", "data": species_schema_many.dump(species)}
+      return {"error": "No species found"}, 404
+    return species_schema_many.dump(species), 200
 
 
 api.add_resource(SpeciesResource, '/species', endpoint='species')
