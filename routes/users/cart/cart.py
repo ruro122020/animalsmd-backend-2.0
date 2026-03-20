@@ -10,7 +10,7 @@ class CartResource(Resource):
     carts = Cart.query.filter_by(user_id=session.get('user_id')).order_by(Cart.id).all()
     if carts:
       return cart_schema_many.dump(carts), 200
-    return {"error": "There are no products in user's cart"}
+    return {"error": "There are no products in user's cart"}, 404
 
   def post(self):
     json = request.get_json()
@@ -24,7 +24,7 @@ class CartResource(Resource):
         #check if product exist
         product = Product.query.filter_by(id = json.get('product_id')).first()
         if not product:
-          return {"error": "product does not exist"}
+          return {"error": "product does not exist"}, 404
         
         #check if product already exist in user's cart
         if product in user.cart_products:          
