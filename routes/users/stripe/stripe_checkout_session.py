@@ -10,7 +10,7 @@ Stripe Sample.
 Python 3.6 or newer required.
 """
 import os
-from flask import Flask, jsonify, redirect, request
+from flask import request
 
 import stripe
 
@@ -50,9 +50,9 @@ class StripeCheckoutSession(Resource):
           return_url=DOMAIN + '/return?session_id={CHECKOUT_SESSION_ID}',
       )
     except Exception as e:
-      return str(e)
+      return {"error": str(e)}, 400
 
-    return jsonify(clientSecret=session.client_secret)
+    return {"clientSecret": session.client_secret}, 200
 
 
 
