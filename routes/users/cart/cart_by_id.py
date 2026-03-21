@@ -25,4 +25,4 @@ class CartByID(Resource):
 
 
 
-api.add_resource(CartByID, '/user/cart/<int:id>')
+api.add_resource(CartByID, '/user/cart/<int:id>', endpoint='user_cart_id')
