@@ -8,14 +8,13 @@ from marshmallow_schemas.users import user_schema
 class Signup(Resource):
   def post(self):
     json = request.get_json()
-    user = User(
-      name=json.get('name'),
-      username=json.get('username'),
-      email=json.get('email'))
-    
-    user.password_hash = json.get('password')
- 
+
     try:
+      user = User(
+        name=json.get('name'),
+        username=json.get('username'),
+        email=json.get('email'))
+      user.password_hash = json.get('password')
       db.session.add(user)
       db.session.commit()
       session['user_id'] = user.id
