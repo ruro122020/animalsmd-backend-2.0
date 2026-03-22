@@ -19,11 +19,11 @@ class SymptomClassification(db.Model):
       raise ValueError('classification must not be None')
     return classification_id
   
-  @validates('symptom_id')
-  def validate_symptom(self, key, symptom_id):
-    if symptom_id is None:
-      raise ValueError('symptom_id must not be None')
-    return symptom_id
+  @validates('symptoms_id')
+  def validate_symptom(self, key, symptoms_id):
+    if symptoms_id is None:
+      raise ValueError('symptoms_id must not be None')
+    return symptoms_id
   
   @hybrid_property
   def classification_obj(self):
@@ -52,10 +52,10 @@ class SymptomClassification(db.Model):
   @classmethod
   def create_row(cls, classification_inst, symptom_inst):
     symptomclassification = cls(classification = classification_inst, symptom= symptom_inst)
-    symptomclassification.save()
+    symptomclassification.save_db()
     return symptomclassification
-  
-  def save(self):
+
+  def save_db(self):
     db.session.add(self)
     db.session.commit()
 
