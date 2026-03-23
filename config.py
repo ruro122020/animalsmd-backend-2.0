@@ -2,13 +2,14 @@
 
 # Remote library imports
 from flask import Flask
-from flask_bcrypt import Bcrypt 
+from flask_bcrypt import Bcrypt
 from flask_cors import CORS
 from flask_migrate import Migrate
-from flask_restful import Api 
+from flask_restful import Api
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import MetaData
 from flask_marshmallow import Marshmallow
+from flask_wtf.csrf import CSRFProtect
 
 import os
 
@@ -35,7 +36,16 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.json.compact = False
 
 #session key configuration
-app.secret_key= os.getenv('SECRET_KEY')
+app.secret_key = os.getenv('SECRET_KEY')
+
+# Cookie security
+is_production = os.getenv('FLASK_ENV') != 'development'
+app.config['SESSION_COOKIE_HTTPONLY'] = True
+app.config['SESSION_COOKIE_SECURE'] = is_production
+app.config['SESSION_COOKIE_SAMESITE'] = 'None' if is_production else 'Lax'
+
+# CSRF token expiration (seconds)
+app.config['WTF_CSRF_TIME_LIMIT'] = 3600
 
 # Define metadata, instantiate db
 metadata = MetaData(naming_convention={
@@ -56,5 +66,9 @@ bcrypt = Bcrypt(app)
 api = Api(app)
 
 # Instantiate CORS
-CORS(app)
+frontend_url = os.getenv('FRONTEND_URL')
+CORS(app, supports_credentials=True, origins=[frontend_url])
+
+# Instantiate CSRF protection
+csrf = CSRFProtect(app)
 

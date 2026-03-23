@@ -21,6 +21,7 @@ psycopg2 = "*"
 psycopg2-binary = "*"
 gunicorn = "*"
 stripe = "*"
+flask-wtf = "*"
 
 [requires]
 python_full_version = "3.8.13"
