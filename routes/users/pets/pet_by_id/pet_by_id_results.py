@@ -8,7 +8,6 @@ from marshmallow_schemas.illness import illness_schema
 from marshmallow_schemas.illnesssymptom import illness_symptom_schema
 from marshmallow_schemas.pet import pet_schema
 from marshmallow_schemas.product import product_schema
-import ipdb
 
 #The end goal is to return illness, medications, and products from results
 
@@ -17,8 +16,9 @@ def create_illnesses_ids_list(symptoms_list):
   #to avoid duplicate ids, we are using the set data structure
   illnesses_ids_set = set()
   for symptom in symptoms_list:
-    illness = IllnessSymptom.query.filter_by(symptom_id=symptom.id).first()
-    illnesses_ids_set.add(illness.illness.id)
+    illness_symptoms = IllnessSymptom.query.filter_by(symptom_id=symptom.id).all()
+    for illness_symptom in illness_symptoms:
+      illnesses_ids_set.add(illness_symptom.illness.id)
   
   #To make it easier to work with the illness_ids_set
   #convert the illnesses_ids_set to a list
