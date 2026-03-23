@@ -1,11 +1,13 @@
 from flask import request, session
 from flask_restful import Resource
-from config import app, db, api
+from config import app, db, api, limiter
 from models.models import User
 from sqlalchemy.exc import IntegrityError
 from marshmallow_schemas.users import user_schema
 
 class Signup(Resource):
+  decorators = [limiter.limit("5 per minute; 20 per hour")]
+
   def post(self):
     json = request.get_json()
 
