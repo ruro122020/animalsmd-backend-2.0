@@ -23,6 +23,7 @@ gunicorn = "*"
 stripe = "*"
 flask-wtf = "*"
 flask-limiter = "*"
+email-validator = "*"
 
 [requires]
 python_full_version = "3.8.13"

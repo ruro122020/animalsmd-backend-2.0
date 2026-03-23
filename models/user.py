@@ -4,6 +4,7 @@ from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import validates
 from config import db, bcrypt
+from email_validator import validate_email, EmailNotValidError
 
 class User(db.Model):
   
@@ -33,10 +34,15 @@ class User(db.Model):
     
   @validates('email')
   def validate_email(self, key, email):
-    if '@' not in email:
-      raise ValueError('Email must be an email address')
-    else:
-      return email
+    try:
+      # check_deliverability=False won't do a DNS lookup, 
+      # it just verifies the format. Switch to true to also 
+      # verify the domain exits after implementing email 
+      # confirmation through email.
+      valid = validate_email(email, check_deliverability=False)  
+      return valid.normalized
+    except EmailNotValidError as e:
+      raise ValueError(str(e))
     
   @validates('_password_hash')
   def validate_password(self, key, _password_hash):
