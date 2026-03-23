@@ -10,6 +10,8 @@ from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import MetaData
 from flask_marshmallow import Marshmallow
 from flask_wtf.csrf import CSRFProtect
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
 
 import os
 
@@ -71,4 +73,7 @@ CORS(app, supports_credentials=True, origins=[frontend_url])
 
 # Instantiate CSRF protection
 csrf = CSRFProtect(app)
+
+# Instantiate rate limiter
+limiter = Limiter(get_remote_address, app=app, default_limits=[])
 

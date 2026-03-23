@@ -1,10 +1,12 @@
 from flask import request, session
 from flask_restful import Resource
-from config import api
+from config import api, limiter
 from models.models import User
 from marshmallow_schemas.users import user_schema
 
 class Login(Resource):
+  decorators = [limiter.limit("5 per minute; 20 per hour")]
+
   def post(self):
     json = request.get_json()
     user = User.query.filter(User.username == json.get('username')).first()

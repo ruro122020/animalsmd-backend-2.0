@@ -22,6 +22,7 @@ psycopg2-binary = "*"
 gunicorn = "*"
 stripe = "*"
 flask-wtf = "*"
+flask-limiter = "*"
 
 [requires]
 python_full_version = "3.8.13"
