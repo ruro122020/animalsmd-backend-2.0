@@ -39,7 +39,6 @@ class CartResource(Resource):
   def delete(self):
     user_session_id = session.get('user_id')
     if user_session_id:
-      print(user_session_id)
       carts = Cart.query.filter_by(user_id = user_session_id).all()
       if carts:
         for cart in carts:
