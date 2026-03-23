@@ -4,7 +4,6 @@ from config import app, db, api
 
 class Logout(Resource):
   def delete(self):
-    print('session', session)
     if session.get('user_id'):
       session['user_id'] = None
       return {}, 200
