@@ -24,7 +24,9 @@ def create_illnesses_ids_list(symptoms_list):
 def create_illness_list(classification_illness, illness_ids):
   #compare the returned list from IllnessesClassifications table to the illness_list
   matched_ids = {
-    ic.illness_id for ic in classification_illness if ic.illness_id in illness_ids
+    illness_classification.illness_id
+    for illness_classification in classification_illness
+    if illness_classification.illness_id in illness_ids
   }
   if not matched_ids:
     return []
