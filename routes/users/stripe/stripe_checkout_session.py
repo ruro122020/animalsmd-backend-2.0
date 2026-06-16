@@ -3,6 +3,7 @@ from itertools import product
 from statistics import quantiles
 from config import api
 from flask_restful import Resource
+from models.models import Product
 
 """
 server.py
@@ -28,14 +29,17 @@ class StripeCheckoutSession(Resource):
     for product in product_list:
       product_obj = product.get('product')
       quantity = product.get('quantity')
-      product_name = product_obj.get('name')
-      product_price = product_obj.get('price')
-      
+
+      #look up the product server-side so price/name come from the DB, not the client
+      db_product = Product.query.filter_by(id=product_obj.get('id')).first()
+      if not db_product:
+        return {"error": "product does not exist"}, 404
+
       product_={
                 "price_data": {
                   "currency": "usd",
-                  "product_data": {"name": product_name},
-                  "unit_amount": product_price * 100,
+                  "product_data": {"name": db_product.name},
+                  "unit_amount": db_product.price * 100,
                 },
                 "adjustable_quantity": {"enabled": True, "minimum": 1, "maximum": 10},
                 "quantity": quantity,
