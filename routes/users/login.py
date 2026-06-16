@@ -9,6 +9,8 @@ class Login(Resource):
 
   def post(self):
     json = request.get_json()
+    if not json or not json.get('username') or not json.get('password'):
+      return {'error': 'Invalid Credentials'}, 401
     user = User.query.filter(User.username == json.get('username')).first()
 
     #use one generic message for both cases so usernames can't be enumerated
