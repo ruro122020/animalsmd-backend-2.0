@@ -12,4 +12,4 @@ class ProductById(Resource):
 
     return {"error":"Product not found"}, 404
   
-api.add_resource(ProductById, '/products/<int:id>', endpoint='')
+api.add_resource(ProductById, '/products/<int:id>', endpoint='product_by_id')
