@@ -12,10 +12,8 @@ class CartByID(Resource):
     if cart.user_id != session.get('user_id'):
       return {"error": "Unauthorized"}, 403
 
-    json = request.get_json() or {}
-    #only allow whitelisted fields so a PATCH can't reassign user_id/id/product_id
-    updates = {k: v for k, v in json.items() if k in {'quantity'}}
-    cart.update_db(updates)
+    #update_db enforces the field whitelist at the model layer
+    cart.update_db(request.get_json() or {})
     return cart_schema.dump(cart), 200
 
   def delete(self, id):

@@ -14,20 +14,25 @@ class Cart(db.Model):
   user = db.relationship('User', back_populates='carts')
   product = db.relationship('Product', back_populates='carts')
   
+  #fields a client may change via update_db; prevents mass-assignment of
+  #user_id/id/product_id from a raw request body
+  updatable_fields = {'quantity'}
+
   #methods to communicate with database
   @classmethod
   def create_row(cls, user, product, quantity):
     cart = cls(user=user, product=product, quantity= quantity)
     cart.save_db()
     return cart
-  
+
   def save_db(self):
     db.session.add(self)
     db.session.commit()
 
   def update_db(self, new_values):
     for key, value in new_values.items():
-      setattr(self, key, value)
+      if key in self.updatable_fields:
+        setattr(self, key, value)
     db.session.commit()
 
   def delete_db(self):
