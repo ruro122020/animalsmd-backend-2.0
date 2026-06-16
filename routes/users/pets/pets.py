@@ -18,16 +18,6 @@ def create_pet(pet, user, species):
   """Create a new pet row."""
   return Pet.create_row(name = pet.get('name'), age = pet.get('age'), weight=pet.get('weight'), user=user.id, species=species.id)#id's had to be passed cause Pet model has no validations yet. 
 
-def add_pets_symptoms(user_pet, pet):
-  """Add symptoms to the pet."""
-  for symptom_name in user_pet.get('symptoms'):
-    symptom = Symptom.query.filter_by(name = symptom_name).first()
-    if symptom:
-     PetSymptom.create_row(pet=pet, symptom=symptom)
-    else:
-      return {"error": f"pet '{symptom_name}' symptom  does not exist"}, 400
-  return None
-
 class Pets(Resource):
   def get(self):
     user_pets = Pet.query.filter_by(user_id = session.get('user_id')).order_by(Pet.id).all()
@@ -39,13 +29,19 @@ class Pets(Resource):
     if not user_pet:
       return {"error": 'User pet info missing'}, 400
    
-    pet_exist = Pet.query.filter_by(name=user_pet.get('name')).first()
+    user_id = session.get('user_id')
+    species_name = user_pet.get('type')
+    if not species_name:
+      return {"error": "species type is missing"}, 400
 
+    if not user_pet.get('symptoms'):
+      return {"error": "symptoms are missing"}, 400
+
+    #name uniqueness is scoped to the account, so different users can reuse names
+    pet_exist = Pet.query.filter_by(name=user_pet.get('name'), user_id=user_id).first()
     if pet_exist:
       return {"error":"Pet already Exist"}, 409
 
-    user_id = session.get('user_id')
-    species_name = user_pet.get('type')
     user = get_user(user_id)
     species = get_species(species_name.lower())
     
@@ -55,16 +51,19 @@ class Pets(Resource):
     if not species:
       return {"error":"species of pet does not exist"}, 400
 
+    #resolve every symptom before creating the pet so a bad symptom name
+    #doesn't leave an orphaned pet in the database
+    symptoms = []
+    for symptom_name in user_pet.get('symptoms'):
+      symptom = Symptom.query.filter_by(name=symptom_name).first()
+      if not symptom:
+        return {"error": f"pet '{symptom_name}' symptom  does not exist"}, 400
+      symptoms.append(symptom)
+
     pet = create_pet(user_pet, user, species)
+    for symptom in symptoms:
+      PetSymptom.create_row(pet=pet, symptom=symptom)
 
-    if not user_pet.get('symptoms'):
-      return {"error":"symptoms are missing"}, 400
-    #user_pet: is an object from the frontend
-    #pet: is the object created in create_pet
-    error_message = add_pets_symptoms(user_pet, pet)
-
-    if error_message:
-      return error_message
     return pet_schema.dump(pet), 200
 
 api.add_resource(Pets, '/user/pets', endpoint='pets')
