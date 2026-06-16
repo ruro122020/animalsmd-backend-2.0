@@ -1,4 +1,3 @@
-from re import I
 from flask import request, session
 from flask_restful import Resource
 from config import api, db
@@ -14,24 +13,23 @@ from marshmallow_schemas.product import product_schema
 def create_illnesses_ids_list(symptoms_list):
   #When query illness_symptoms, the same illness is returned for multiple symptoms
   #to avoid duplicate ids, we are using the set data structure
-  illnesses_ids_set = set()
-  for symptom in symptoms_list:
-    illness_symptoms = IllnessSymptom.query.filter_by(symptom_id=symptom.id).all()
-    for illness_symptom in illness_symptoms:
-      illnesses_ids_set.add(illness_symptom.illness.id)
-  
-  #To make it easier to work with the illness_ids_set
-  #convert the illnesses_ids_set to a list
-  return list(illnesses_ids_set)
+  symptom_ids = [symptom.id for symptom in symptoms_list]
+  if not symptom_ids:
+    return []
+  #one query for all symptoms instead of one per symptom (avoids N+1 queries)
+  illness_symptoms = IllnessSymptom.query.filter(
+    IllnessSymptom.symptom_id.in_(symptom_ids)).all()
+  return list({illness_symptom.illness_id for illness_symptom in illness_symptoms})
 
 def create_illness_list(classification_illness, illness_ids):
   #compare the returned list from IllnessesClassifications table to the illness_list
-  illness_list = []
-  for illness_classification in classification_illness:
-    if illness_classification.illness_id in illness_ids:
-      illness = Illness.query.filter_by(id=illness_classification.illness_id).first()
-      illness_list.append(illness)
-  return illness_list
+  matched_ids = {
+    ic.illness_id for ic in classification_illness if ic.illness_id in illness_ids
+  }
+  if not matched_ids:
+    return []
+  #one query for all matched illnesses instead of one per illness (avoids N+1)
+  return Illness.query.filter(Illness.id.in_(matched_ids)).all()
 
 def get_pets_classification_id(pet):
   #query the speciesclassifications table to find the classification id of the species 
@@ -49,6 +47,8 @@ class PetResults(Resource):
 
     if not pet:
       return {"error": "pet id not found or pet does not exist"}, 400
+    if pet.user_id != session.get('user_id'):
+      return {"error": "Unauthorized"}, 403
     #Now we want to get all the illnesses that matches the symptoms id
     illness_ids = create_illnesses_ids_list(pet.symptoms)
 
