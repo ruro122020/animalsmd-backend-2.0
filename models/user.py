@@ -43,8 +43,6 @@ class User(db.Model):
 
   @password_hash.setter
   def password_hash(self, password):
-    #validate the RAW password here; the old @validates('_password_hash') never
-    #worked because that column always holds the ~60-char bcrypt hash
     if not isinstance(password, str) or len(password) < 8:
       raise ValueError('password must be at least 8 characters long')
     password_hash = bcrypt.generate_password_hash(
