@@ -12,6 +12,7 @@ from flask_marshmallow import Marshmallow
 from flask_wtf.csrf import CSRFProtect
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
+from werkzeug.middleware.proxy_fix import ProxyFix
 
 import os
 
@@ -31,6 +32,17 @@ supaport = os.getenv('SUPAPORT')
 
 # Instantiate app, set attributes
 app = Flask(__name__)
+
+# Trust reverse-proxy headers (e.g. X-Forwarded-For) only when running behind
+# proxies. Defaults to 0 trusted proxies so dev/local behavior is unchanged and
+# get_remote_address keeps returning the real client IP per request.
+trusted_proxy_count = int(os.getenv('TRUSTED_PROXY_COUNT', '0'))
+app.wsgi_app = ProxyFix(
+  app.wsgi_app,
+  x_for=trusted_proxy_count,
+  x_proto=trusted_proxy_count,
+  x_host=trusted_proxy_count,
+)
 
 #Postgresql string
 app.config['SQLALCHEMY_DATABASE_URI'] = f'postgresql://{user}:{password}@localhost:5432/{dbname}'
@@ -75,5 +87,14 @@ CORS(app, supports_credentials=True, origins=[frontend_url])
 csrf = CSRFProtect(app)
 
 # Instantiate rate limiter
-limiter = Limiter(get_remote_address, app=app, default_limits=[])
+# Use a shared storage backend (e.g. redis://...) in production so limits are
+# enforced across all worker processes/instances. Defaults to in-memory for
+# local/dev, which keeps existing behavior when RATELIMIT_STORAGE_URI is unset.
+ratelimit_storage_uri = os.getenv('RATELIMIT_STORAGE_URI', 'memory://')
+limiter = Limiter(
+  get_remote_address,
+  app=app,
+  default_limits=[],
+  storage_uri=ratelimit_storage_uri,
+)
 
