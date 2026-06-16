@@ -1,6 +1,4 @@
 #! /usr/bin/env python3.6
-from itertools import product
-from statistics import quantiles
 from config import api
 from flask_restful import Resource
 from models.models import Product
@@ -26,8 +24,13 @@ class StripeCheckoutSession(Resource):
     
     line_items_list = []
 
+    if not isinstance(product_list, list) or not product_list:
+      return {"error": "a non-empty list of products is required"}, 400
+
     for product in product_list:
-      product_obj = product.get('product')
+      product_obj = product.get('product') if isinstance(product, dict) else None
+      if not product_obj:
+        return {"error": "each item must include a product"}, 400
       quantity = product.get('quantity')
 
       #look up the product server-side so price/name come from the DB, not the client

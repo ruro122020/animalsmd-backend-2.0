@@ -1,5 +1,5 @@
 from flask_restful import Resource
-from config import api
+from config import api, db
 from flask import request, session
 from models.models import Cart, User, Product
 from marshmallow_schemas.cart import cart_schema, cart_schema_many
@@ -30,10 +30,15 @@ class CartResource(Resource):
         if product in user.cart_products:          
           return {"error":"Product already exist in user's cart"},  403
         
-        cart = Cart.create_row(user, product, json.get('quantity'))
+        quantity = json.get('quantity')
+        if not isinstance(quantity, int) or quantity < 1:
+          return {"error": "quantity must be a positive integer"}, 400
+
+        cart = Cart.create_row(user, product, quantity)
         return cart_schema.dump(cart), 200
       except Exception as e:
-        return {"error": str(e)}, 404
+        db.session.rollback()
+        return {"error": str(e)}, 400
     return {"error": "Cart Not Added"}, 400
   
   def delete(self):

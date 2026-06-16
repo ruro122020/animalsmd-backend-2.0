@@ -1,9 +1,20 @@
 from flask import session, jsonify, request
-#this file authenticates users before accessing protected routes.
-#add route's endpoint to this array
-protected_routes = ['pets', 'user_pet_id', 'user_pet_results', 'user_cart', 'user_cart_id', 'stripecheckoutsession', 'sessionstatus']
+#Authentication is default-DENY: every endpoint requires a logged-in session
+#unless its endpoint name is listed below. New endpoints are protected
+#automatically, so forgetting to update this file fails safe (401) instead of
+#silently exposing data.
+public_routes = {
+  'login', 'signup', 'logout', 'checksession', 'csrf_token',
+  'products', 'product_by_id', 'species', 'speciesbytype',
+  'testingroute', 'static',
+}
 
 class authenticate():
   def check_authentication():
-    if 'user_id' not in session and request.endpoint in protected_routes:
-      return jsonify({"Error":"Unauthorized"}), 401
+    #let CORS preflight and unmatched routes (endpoint is None) through
+    if request.method == 'OPTIONS' or request.endpoint is None:
+      return None
+    if request.endpoint in public_routes:
+      return None
+    if 'user_id' not in session:
+      return jsonify({"Error": "Unauthorized"}), 401

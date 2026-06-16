@@ -33,27 +33,21 @@ class User(db.Model):
     
   @validates('email')
   def validate_email(self, key, email):
-    if '@' not in email:
+    if not email or '@' not in email:
       raise ValueError('Email must be an email address')
-    else:
-      return email
-    
-  @validates('_password_hash')
-  def validate_password(self, key, _password_hash):
-    if len(_password_hash) > 8:
-      return _password_hash
-    else:
-      raise ValueError('password must be more than 8 characters long')
+    return email
 
   @hybrid_property
   def password_hash(self):
     raise AttributeError('Password cannot be shown')
-  
+
   @password_hash.setter
   def password_hash(self, password):
+    if not isinstance(password, str) or len(password) < 8:
+      raise ValueError('password must be at least 8 characters long')
     password_hash = bcrypt.generate_password_hash(
       password.encode('utf-8'))
-    
+
     self._password_hash = password_hash.decode('utf-8')
 
   def authenticate(self, password):

@@ -10,6 +10,13 @@ class Signup(Resource):
 
   def post(self):
     json = request.get_json()
+    if not json:
+      return {'error': 'Request body is required'}, 400
+
+    required = ('name', 'username', 'email', 'password')
+    missing = [field for field in required if not json.get(field)]
+    if missing:
+      return {'error': f"Missing required fields: {', '.join(missing)}"}, 400
 
     try:
       user = User(

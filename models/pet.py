@@ -22,20 +22,25 @@ class Pet(db.Model):
   def symptoms(self):
     return [pet.symptom for pet in self.pet_symptoms]
   
+  #fields a client may change via update_db; prevents mass-assignment of
+  #user_id/id/species_id from a raw request body
+  updatable_fields = {'name', 'age', 'weight'}
+
   #methods to communicate with database
   @classmethod
   def create_row(cls, name, age, weight, species, user):
     pet = cls(name=name, age=age, weight=weight, species_id=species, user_id=user)
     pet.save_db()
     return pet
-  
+
   def save_db(self):
     db.session.add(self)
     db.session.commit()
 
   def update_db(self, new_values):
     for key, value in new_values.items():
-      setattr(self, key, value)
+      if key in self.updatable_fields:
+        setattr(self, key, value)
     db.session.commit()
 
   def delete_db(self):
