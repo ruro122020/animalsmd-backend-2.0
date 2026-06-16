@@ -81,7 +81,9 @@ api = Api(app)
 
 # Instantiate CORS
 frontend_url = os.getenv('FRONTEND_URL')
-CORS(app, supports_credentials=True, origins=[frontend_url])
+#avoid origins=[None] when the env var is unset, which silently breaks CORS
+allowed_origins = [frontend_url] if frontend_url else []
+CORS(app, supports_credentials=True, origins=allowed_origins)
 
 # Instantiate CSRF protection
 csrf = CSRFProtect(app)
