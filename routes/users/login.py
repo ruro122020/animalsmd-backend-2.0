@@ -11,14 +11,11 @@ class Login(Resource):
     json = request.get_json()
     user = User.query.filter(User.username == json.get('username')).first()
 
-    if user:
-      if user.authenticate(json.get('password')):
-        session['user_id'] = user.id
-        return user_schema.dump(user), 200
-      else:
-        return {'error':'Invalid Credentials'}, 401
-    else:
-      return {'error': 'User does NOT exist'}, 400
+    #use one generic message for both cases so usernames can't be enumerated
+    if user and user.authenticate(json.get('password')):
+      session['user_id'] = user.id
+      return user_schema.dump(user), 200
+    return {'error': 'Invalid Credentials'}, 401
 
 
 api.add_resource(Login, '/login', endpoint='login')
