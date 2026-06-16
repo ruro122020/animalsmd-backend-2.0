@@ -12,8 +12,10 @@ class CartByID(Resource):
     if cart.user_id != session.get('user_id'):
       return {"error": "Unauthorized"}, 403
 
-    json = request.get_json()
-    cart.update_db(json)
+    json = request.get_json() or {}
+    #only allow whitelisted fields so a PATCH can't reassign user_id/id/product_id
+    updates = {k: v for k, v in json.items() if k in {'quantity'}}
+    cart.update_db(updates)
     return cart_schema.dump(cart), 200
 
   def delete(self, id):
