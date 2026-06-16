@@ -17,8 +17,8 @@ class CartResource(Resource):
     
     if json:
       try:
-        #check if user exist
-        user = User.query.filter_by(id=json.get('user_id')).first()
+        #check if user exist (owner comes from the session, never the request body)
+        user = User.query.filter_by(id=session.get('user_id')).first()
         if not user:
           return {"error": "user does not exist"}, 404
         #check if product exist
