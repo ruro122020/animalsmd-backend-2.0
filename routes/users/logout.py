@@ -5,7 +5,7 @@ from config import app, db, api
 class Logout(Resource):
   def delete(self):
     if session.get('user_id'):
-      session['user_id'] = None
+      session.pop('user_id', None)
       return {}, 200
     
     return {"error": "not logged in"}, 401
