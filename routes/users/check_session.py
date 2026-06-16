@@ -8,7 +8,8 @@ class CheckSession(Resource):
   def get(self):
     if session.get('user_id'):
       user = User.query.filter(User.id == session.get('user_id')).first()
-      return user_schema.dump(user), 200
+      if user:
+        return user_schema.dump(user), 200
     return {"error": "Not logged in"}, 401
   
 
