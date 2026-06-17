@@ -1,6 +1,6 @@
 # AnimalsMD — Backend
 
-A Flask REST API that helps pet owners figure out what might be wrong with their pet. Users register their pets, log symptoms, and get back possible illnesses, each with a description, home remedy, recommended medications, and products they can add to a cart and buy through Stripe.
+A Flask REST API that helps pet owners figure out what might be wrong with their pet. Users register their pets, log symptoms, and get back possible illnesses, each with a description, home remedy, recommended medications, and products they can add to a cart.
 
 I built this project to learn how to design and build RESTful APIs from the ground up: routing organized around resources, session authentication, database modeling, and the security concerns that come with handling real user accounts.
 
@@ -8,7 +8,7 @@ I built this project to learn how to design and build RESTful APIs from the grou
 
 - **Symptom-to-illness matching** — the core feature. A pet's symptoms and species classification are matched against a relational dataset of illnesses, so a coughing, sneezing dog gets back "respiratory infection" with treatment info, not a generic list.
 - **Pet management** — full CRUD (Create, Read, Update, Delete) for pets, each tied to a species and a set of symptoms.
-- **Shopping cart and checkout** — users add recommended products to a cart and pay through Stripe checkout sessions.
+- **Shopping cart** — users add recommended products to a cart.
 - **Session-based auth** — signup, login, logout, and session checks, with passwords hashed using Bcrypt.
 
 ## Technical highlights
@@ -27,4 +27,4 @@ I built this project to learn how to design and build RESTful APIs from the grou
 
 ## Tech stack
 
-Python 3.8 · Flask · PostgreSQL · SQLAlchemy · Flask-Migrate · Marshmallow · Flask-WTF · Flask-Limiter · Bcrypt · Stripe · Flask-CORS · Gunicorn
+Python 3.8 · Flask · PostgreSQL · SQLAlchemy · Flask-Migrate · Marshmallow · Flask-WTF · Flask-Limiter · Bcrypt · Flask-CORS · Gunicorn
