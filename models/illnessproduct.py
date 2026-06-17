@@ -1,6 +1,7 @@
 from config import db
+from .base import BaseModel
 
-class IllnessProduct(db.Model):
+class IllnessProduct(BaseModel):
   __tablename__ = 'illnessesproducts'
 
   id = db.Column(db.Integer, primary_key=True)
@@ -17,16 +18,3 @@ class IllnessProduct(db.Model):
     illness_product = cls(illness=illness, product=product)
     illness_product.save_db()
     return illness_product
-  
-  def save_db(self):
-    db.session.add(self)
-    db.session.commit()
-
-  def update_db(self, new_values):
-    for key, value in new_values.items():
-      setattr(self, key, value)
-    db.session.commit()
-
-  def delete_db(self):
-    db.session.delete(self)
-    db.session.commit()

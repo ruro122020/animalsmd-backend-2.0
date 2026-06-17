@@ -1,8 +1,9 @@
 from config import db
 from sqlalchemy.orm import validates
 from sqlalchemy.ext.hybrid import hybrid_property
+from .base import BaseModel
 
-class SymptomClassification(db.Model):
+class SymptomClassification(BaseModel):
   __tablename__ = 'symptomsclassifications'
 
   id = db.Column(db.Integer, primary_key=True)
@@ -54,16 +55,3 @@ class SymptomClassification(db.Model):
     symptomclassification = cls(classification = classification_inst, symptom= symptom_inst)
     symptomclassification.save_db()
     return symptomclassification
-
-  def save_db(self):
-    db.session.add(self)
-    db.session.commit()
-
-  def update_db(self, new_values):
-    for key, value in new_values.items():
-      setattr(self, key, value)
-    db.session.commit()
-
-  def delete_db(self):
-    db.session.delete(self)
-    db.session.commit()
