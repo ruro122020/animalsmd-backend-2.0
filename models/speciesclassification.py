@@ -1,8 +1,9 @@
 from config import db
 from sqlalchemy.orm import validates
 from sqlalchemy.ext.hybrid import hybrid_property
+from .base import BaseModel
 
-class SpeciesClassification(db.Model):
+class SpeciesClassification(BaseModel):
   __tablename__ = 'speciesclassifications'
 
   id = db.Column(db.Integer, primary_key=True)
@@ -59,17 +60,4 @@ class SpeciesClassification(db.Model):
     species_classification = cls(classification=classification, species=species)
     species_classification.save_db()
     return species_classification
-  
-  def save_db(self):
-    db.session.add(self)
-    db.session.commit()
 
-  def update_db(self, new_values):
-    for key, value in new_values.items():
-      setattr(self, key, value)
-    db.session.commit()
-
-  def delete_db(self):
-    db.session.delete(self)
-    db.session.commit()
-    

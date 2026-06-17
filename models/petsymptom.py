@@ -1,9 +1,10 @@
 from sqlalchemy.orm import validates
 from config import db
 from sqlalchemy.ext.hybrid import hybrid_property
+from .base import BaseModel
 
 
-class PetSymptom(db.Model):
+class PetSymptom(BaseModel):
   __tablename__ = 'petsymptoms'
 
   id = db.Column(db.Integer, primary_key=True)
@@ -22,16 +23,3 @@ class PetSymptom(db.Model):
     pet_symptom = cls(pet=pet, symptom=symptom)
     pet_symptom.save_db()
     return pet_symptom
-  
-  def save_db(self):
-    db.session.add(self)
-    db.session.commit()
-
-  def update_db(self, new_values):
-    for key, value in new_values.items():
-      setattr(self, key, value)
-    db.session.commit()
-
-  def delete_db(self):
-    db.session.delete(self)
-    db.session.commit()

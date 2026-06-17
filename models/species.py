@@ -2,9 +2,10 @@
 from sqlalchemy.orm import validates
 from config import db
 from sqlalchemy.ext.hybrid import hybrid_property
+from .base import BaseModel
 
 
-class Species(db.Model):
+class Species(BaseModel):
   __tablename__ = 'species'
 
   id = db.Column(db.Integer, primary_key=True)
@@ -12,6 +13,9 @@ class Species(db.Model):
 
   #relationships
   species_classification = db.relationship('SpeciesClassification', back_populates='species')
+
+  #fields a client may change via update_db
+  updatable_fields = {'type_name'}
 
   #hybrid_property is being used for the getter and setter 
   #because classification and species attributes are NOT columns
@@ -40,16 +44,3 @@ class Species(db.Model):
     type_name_obj = cls(type_name=type_name)
     type_name_obj.save_db()
     return type_name_obj
-  
-  def save_db(self):
-    db.session.add(self)
-    db.session.commit()
-
-  def update_db(self, new_values):
-    for key, value in new_values.items():
-      setattr(self, key, value)
-    db.session.commit()
-
-  def delete_db(self):
-    db.session.delete(self)
-    db.session.commit()
