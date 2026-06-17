@@ -1,8 +1,9 @@
 from config import db
 from sqlalchemy.ext.hybrid import hybrid_property
+from .base import BaseModel
 
 
-class Cart(db.Model):
+class Cart(BaseModel):
   __tablename__ = 'carts'
 
   id = db.Column(db.Integer, primary_key=True)
@@ -24,17 +25,3 @@ class Cart(db.Model):
     cart = cls(user=user, product=product, quantity= quantity)
     cart.save_db()
     return cart
-
-  def save_db(self):
-    db.session.add(self)
-    db.session.commit()
-
-  def update_db(self, new_values):
-    for key, value in new_values.items():
-      if key in self.updatable_fields:
-        setattr(self, key, value)
-    db.session.commit()
-
-  def delete_db(self):
-    db.session.delete(self)
-    db.session.commit()

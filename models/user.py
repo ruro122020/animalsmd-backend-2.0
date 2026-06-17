@@ -4,9 +4,10 @@ from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import validates
 from config import db, bcrypt
+from .base import BaseModel
 
-class User(db.Model):
-  
+class User(BaseModel):
+
   __tablename__ = 'users'
 
   __table_args__ = (db.CheckConstraint('length(name) > 3', name='ck_user_name_length'),)
@@ -16,6 +17,11 @@ class User(db.Model):
   username = db.Column(db.String, nullable=False, unique=True)
   email = db.Column(db.String, nullable=False, unique=True)
   _password_hash = db.Column(db.String, nullable=False)
+
+  #fields a client may change via update_db. Deliberately excludes id,
+  #username (login identity), and _password_hash (set only via password_hash
+  #setter). Password changes must not go through mass-assignment.
+  updatable_fields = {'name', 'email'}
 
   #relationships
   carts = db.relationship('Cart', back_populates='user')

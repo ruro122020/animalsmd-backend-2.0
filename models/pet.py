@@ -1,8 +1,9 @@
 from sqlalchemy.orm import validates
 from config import db
 from sqlalchemy.ext.hybrid import hybrid_property
+from .base import BaseModel
 
-class Pet(db.Model):
+class Pet(BaseModel):
   __tablename__ = 'pets'
 
   id = db.Column(db.Integer, primary_key=True)
@@ -32,17 +33,3 @@ class Pet(db.Model):
     pet = cls(name=name, age=age, weight=weight, species_id=species, user_id=user)
     pet.save_db()
     return pet
-
-  def save_db(self):
-    db.session.add(self)
-    db.session.commit()
-
-  def update_db(self, new_values):
-    for key, value in new_values.items():
-      if key in self.updatable_fields:
-        setattr(self, key, value)
-    db.session.commit()
-
-  def delete_db(self):
-    db.session.delete(self)
-    db.session.commit()

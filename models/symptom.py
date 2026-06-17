@@ -1,13 +1,17 @@
 from config import db
 from sqlalchemy.orm import validates
 from sqlalchemy.ext.hybrid import hybrid_property
+from .base import BaseModel
 
-class Symptom(db.Model):
+class Symptom(BaseModel):
   __tablename__ = 'symptoms'
 
   id = db.Column(db.Integer, primary_key=True)
   name = db.Column(db.String, nullable=False)
-  
+
+  #fields a client may change via update_db
+  updatable_fields = {'name'}
+
   #relationship with classifications table
   symptom_classifications = db.relationship('SymptomClassification', back_populates='symptom')
   
@@ -40,16 +44,3 @@ class Symptom(db.Model):
     name = cls(name = name)
     name.save_db()
     return name
-  
-  def save_db(self):
-    db.session.add(self)
-    db.session.commit()
-
-  def update_db(self, new_values):
-    for key, value in new_values.items():
-      setattr(self, key, value)
-    db.session.commit()
-
-  def delete_db(self):
-    db.session.delete(self)
-    db.session.commit()
