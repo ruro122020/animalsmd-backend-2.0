@@ -1,0 +1,28 @@
+import os
+
+import pytest
+
+# Importing config triggers Pipenv's automatic .env loading so the same
+# USER/PASSWORD env vars the app uses are available here.
+from config import app as flask_app, db
+
+
+@pytest.fixture(scope='session')
+def app():
+  user = os.getenv('USER')
+  password = os.getenv('PASSWORD')
+  default_test_uri = (
+    f'postgresql://{user}:{password}@localhost:5432/animalsmd_test'
+  )
+  test_uri = os.getenv('TEST_DATABASE_URL', default_test_uri)
+
+  flask_app.config['SQLALCHEMY_DATABASE_URI'] = test_uri
+  flask_app.config['TESTING'] = True
+  flask_app.config['RATELIMIT_ENABLED'] = False
+  flask_app.config['SESSION_COOKIE_SECURE'] = False
+
+  with flask_app.app_context():
+    db.create_all()
+    yield flask_app
+    db.session.remove()
+    db.drop_all()
