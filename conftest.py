@@ -64,3 +64,9 @@ def test_user(db_session):
   db_session.add(user)
   db_session.commit()
   return user
+
+
+@pytest.fixture(scope='function')
+def csrf_token(client):
+  response = client.get('/csrf-token')
+  return response.get_json()['csrf_token']
