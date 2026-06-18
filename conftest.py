@@ -49,3 +49,18 @@ def db_session(app):
 @pytest.fixture(scope='function')
 def client(app):
   return app.test_client()
+
+
+@pytest.fixture(scope='function')
+def test_user(db_session):
+  from models.models import User
+
+  user = User(
+    name='John Smith',
+    username='jsmith',
+    email='jsmith@email.com',
+  )
+  user.password_hash = 'testpassword123'
+  db_session.add(user)
+  db_session.commit()
+  return user
