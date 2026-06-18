@@ -44,3 +44,8 @@ def db_session(app):
   transaction.rollback()
   connection.close()
   db.session.configure(bind=db.engine)
+
+
+@pytest.fixture(scope='function')
+def client(app):
+  return app.test_client()
