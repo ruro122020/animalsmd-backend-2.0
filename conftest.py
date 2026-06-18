@@ -26,3 +26,21 @@ def app():
     yield flask_app
     db.session.remove()
     db.drop_all()
+
+
+@pytest.fixture(scope='function')
+def db_session(app):
+  # Bind the session to a single connection-level transaction so every test
+  # runs in isolation. Rolling back after the test discards all of its writes,
+  # preventing state from leaking into other tests.
+  connection = db.engine.connect()
+  transaction = connection.begin()
+
+  db.session.configure(bind=connection)
+
+  yield db.session
+
+  db.session.remove()
+  transaction.rollback()
+  connection.close()
+  db.session.configure(bind=db.engine)
