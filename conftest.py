@@ -6,6 +6,11 @@ import pytest
 # USER/PASSWORD env vars the app uses are available here.
 from config import app as flask_app, db
 
+# Importing the app module wires up everything the real server does: it registers
+# all models on db.metadata (so db.create_all() builds the full schema), mounts
+# every route, and installs the auth before_request hook and CSRF error handler.
+import app as _app_module  # noqa: F401
+
 
 @pytest.fixture(scope='session')
 def app():
