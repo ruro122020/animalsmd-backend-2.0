@@ -35,20 +35,32 @@ def app():
 
 @pytest.fixture(scope='function')
 def db_session(app):
-  # Bind the session to a single connection-level transaction so every test
-  # runs in isolation. Rolling back after the test discards all of its writes,
-  # preventing state from leaking into other tests.
-  connection = db.engine.connect()
+  # Run every test inside one connection-level transaction that is rolled back
+  # at teardown, so no test's writes leak into another.
+  #
+  # Flask-SQLAlchemy's Session.get_bind always resolves ORM queries to
+  # db.engines[None] and ignores the session's own bind, so binding the session
+  # to a connection does nothing on its own. We swap db.engines[None] to point
+  # at our single connection for the duration of the test, and set
+  # join_transaction_mode='create_savepoint' so a test's commit() releases a
+  # SAVEPOINT instead of committing the real transaction. The outer rollback
+  # then discards everything.
+  engines = db.engines
+  original_engine = engines[None]
+  connection = original_engine.connect()
   transaction = connection.begin()
 
-  db.session.configure(bind=connection)
+  engines[None] = connection
+  db.session.remove()
+  db.session.configure(join_transaction_mode='create_savepoint')
 
   yield db.session
 
   db.session.remove()
+  db.session.configure(join_transaction_mode='conditional_savepoint')
+  engines[None] = original_engine
   transaction.rollback()
   connection.close()
-  db.session.configure(bind=db.engine)
 
 
 @pytest.fixture(scope='function')
