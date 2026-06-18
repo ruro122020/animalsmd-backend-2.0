@@ -70,3 +70,13 @@ def test_user(db_session):
 def csrf_token(client):
   response = client.get('/csrf-token')
   return response.get_json()['csrf_token']
+
+
+@pytest.fixture(scope='function')
+def auth_client(client, test_user, csrf_token):
+  client.post(
+    '/login',
+    json={'username': 'jsmith', 'password': 'testpassword123'},
+    headers={'X-CSRFToken': csrf_token},
+  )
+  return client
