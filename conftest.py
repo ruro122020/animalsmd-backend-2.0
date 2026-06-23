@@ -29,6 +29,11 @@ def app():
 
   flask_app.config['SQLALCHEMY_DATABASE_URI'] = test_uri
   flask_app.config['TESTING'] = True
+  # Disable the rate limiter for the whole suite. auth_client is function scoped,
+  # so it logs in once per test, and POST /login is capped at 5/min, 20/hour. Left
+  # enabled, the suite would trip 429 Too Many Requests and produce flaky failures
+  # unrelated to the code under test. The tradeoff is that the limiter itself goes
+  # uncovered here, so it needs a dedicated test that re-enables it locally.
   flask_app.config['RATELIMIT_ENABLED'] = False
   flask_app.config['SESSION_COOKIE_SECURE'] = False
 
