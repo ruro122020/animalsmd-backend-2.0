@@ -9,7 +9,13 @@ from config import app as flask_app, db
 # Importing the app module wires up everything the real server does: it registers
 # all models on db.metadata (so db.create_all() builds the full schema), mounts
 # every route, and installs the auth before_request hook and CSRF error handler.
-import app as _app_module  # noqa: F401
+import app as _app_module
+
+# Single source of truth for the test login. test_user inserts this user and
+# auth_client logs in with these same credentials. Keeping them here avoids
+# duplicating the literals across fixtures where a typo would silently break login.
+TEST_USERNAME = 'jsmith'
+TEST_PASSWORD = 'testpassword123'
 
 
 @pytest.fixture(scope='session')
@@ -74,10 +80,10 @@ def test_user(db_session):
 
   user = User(
     name='John Smith',
-    username='jsmith',
+    username=TEST_USERNAME,
     email='jsmith@email.com',
   )
-  user.password_hash = 'testpassword123'
+  user.password_hash = TEST_PASSWORD
   db_session.add(user)
   db_session.commit()
   return user
@@ -93,7 +99,7 @@ def csrf_token(client):
 def auth_client(client, test_user, csrf_token):
   client.post(
     '/login',
-    json={'username': 'jsmith', 'password': 'testpassword123'},
+    json={'username': TEST_USERNAME, 'password': TEST_PASSWORD},
     headers={'X-CSRFToken': csrf_token},
   )
   return client
