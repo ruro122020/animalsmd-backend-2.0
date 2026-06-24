@@ -79,3 +79,20 @@ def test_signup_invalid_name_returns_422(client, db_session, csrf_token):
   assert response.get_json() == {
     'error': 'Name must be of type string and more than 3 characters'
   }
+
+
+def test_signup_invalid_email_returns_422(client, db_session, csrf_token):
+  # The email validator rejects any value without an '@'; the resulting
+  # ValueError is reported as a 422 with the validator's message.
+  response = client.post(
+    '/signup',
+    json={
+      'name': 'Jane Doe',
+      'username': 'janedoe',
+      'email': 'not-an-email',
+      'password': 'supersecret',
+    },
+    headers={'X-CSRFToken': csrf_token},
+  )
+  assert response.status_code == 422
+  assert response.get_json() == {'error': 'Email must be an email address'}
