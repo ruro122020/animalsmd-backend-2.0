@@ -96,3 +96,23 @@ def test_signup_invalid_email_returns_422(client, db_session, csrf_token):
   )
   assert response.status_code == 422
   assert response.get_json() == {'error': 'Email must be an email address'}
+
+
+def test_signup_invalid_password_returns_422(client, db_session, csrf_token):
+  # The password setter requires a string of at least eight characters; a short
+  # password raises ValueError, surfaced as a 422 with that message. The field is
+  # non-empty so it clears the route's required-fields check first.
+  response = client.post(
+    '/signup',
+    json={
+      'name': 'Jane Doe',
+      'username': 'janedoe',
+      'email': 'janedoe@email.com',
+      'password': 'short',
+    },
+    headers={'X-CSRFToken': csrf_token},
+  )
+  assert response.status_code == 422
+  assert response.get_json() == {
+    'error': 'password must be at least 8 characters long'
+  }
