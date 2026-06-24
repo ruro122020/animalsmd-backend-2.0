@@ -4,7 +4,7 @@ import pytest
 
 # Importing config triggers Pipenv's automatic .env loading so the same
 # USER/PASSWORD env vars the app uses are available here.
-from config import app as flask_app, db
+from config import app as flask_app, db, limiter
 
 # Importing the app module wires up everything the real server does: it registers
 # all models on db.metadata (so db.create_all() builds the full schema), mounts
@@ -34,7 +34,13 @@ def app():
   # enabled, the suite would trip 429 Too Many Requests and produce flaky failures
   # unrelated to the code under test. The tradeoff is that the limiter itself goes
   # uncovered here, so it needs a dedicated test that re-enables it locally.
+  #
+  # Flask-Limiter caches its enabled flag from RATELIMIT_ENABLED at construction
+  # time, which happens on import in config.py before this fixture runs, so
+  # setting the config key alone has no effect. Set limiter.enabled directly so
+  # the limit decorators become no-ops for the suite.
   flask_app.config['RATELIMIT_ENABLED'] = False
+  limiter.enabled = False
   flask_app.config['SESSION_COOKIE_SECURE'] = False
 
   with flask_app.app_context():
@@ -42,6 +48,21 @@ def app():
     yield flask_app
     db.session.remove()
     db.drop_all()
+
+
+@pytest.fixture(scope='function', autouse=True)
+def app_context(app):
+  # Push a fresh application context per test so Flask's `g` starts empty each
+  # time. The session-scoped `app` fixture keeps one long-lived context open for
+  # create_all/drop_all, and `g` is bound to the application context, so without
+  # a per-test context every test would share the same `g`. flask_wtf's
+  # generate_csrf caches its token in `g` and only writes the matching value to
+  # the session when it is absent; a leaked `g.csrf_token` makes the second test
+  # onward skip that session write, emit no session cookie, and fail CSRF
+  # validation on the next mutating request. A nested context gives each test its
+  # own `g` and is popped at teardown.
+  with app.app_context():
+    yield
 
 
 @pytest.fixture(scope='function')
