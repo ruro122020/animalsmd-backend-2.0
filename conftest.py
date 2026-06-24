@@ -4,7 +4,7 @@ import pytest
 
 # Importing config triggers Pipenv's automatic .env loading so the same
 # USER/PASSWORD env vars the app uses are available here.
-from config import app as flask_app, db
+from config import app as flask_app, db, limiter
 
 # Importing the app module wires up everything the real server does: it registers
 # all models on db.metadata (so db.create_all() builds the full schema), mounts
@@ -34,7 +34,13 @@ def app():
   # enabled, the suite would trip 429 Too Many Requests and produce flaky failures
   # unrelated to the code under test. The tradeoff is that the limiter itself goes
   # uncovered here, so it needs a dedicated test that re-enables it locally.
+  #
+  # Flask-Limiter caches its enabled flag from RATELIMIT_ENABLED at construction
+  # time, which happens on import in config.py before this fixture runs, so
+  # setting the config key alone has no effect. Set limiter.enabled directly so
+  # the limit decorators become no-ops for the suite.
   flask_app.config['RATELIMIT_ENABLED'] = False
+  limiter.enabled = False
   flask_app.config['SESSION_COOKIE_SECURE'] = False
 
   with flask_app.app_context():
