@@ -43,3 +43,20 @@ def test_signup_missing_fields_returns_400(client, csrf_token):
   assert 'name' in error
   assert 'email' in error
   assert 'password' in error
+
+
+def test_signup_duplicate_user_returns_422(client, test_user, csrf_token):
+  # Reusing an existing username trips the unique constraint, which the route
+  # catches as an IntegrityError and reports as Unprocessable Entity.
+  response = client.post(
+    '/signup',
+    json={
+      'name': 'Impostor Smith',
+      'username': 'jsmith',
+      'email': 'different@email.com',
+      'password': 'supersecret',
+    },
+    headers={'X-CSRFToken': csrf_token},
+  )
+  assert response.status_code == 422
+  assert response.get_json() == {'error': 'Unproccessable Entity'}
