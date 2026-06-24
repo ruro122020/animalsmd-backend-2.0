@@ -25,3 +25,15 @@ def test_login_wrong_password_returns_401(client, test_user, csrf_token):
   )
   assert response.status_code == 401
   assert response.get_json() == {'error': 'Invalid Credentials'}
+
+
+def test_login_missing_credentials_returns_401(client, csrf_token):
+  # A body that omits the password short-circuits to the same generic rejection
+  # before any user lookup happens.
+  response = client.post(
+    '/login',
+    json={'username': TEST_USERNAME},
+    headers={'X-CSRFToken': csrf_token},
+  )
+  assert response.status_code == 401
+  assert response.get_json() == {'error': 'Invalid Credentials'}
