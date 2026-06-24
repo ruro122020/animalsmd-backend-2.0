@@ -44,6 +44,21 @@ def app():
     db.drop_all()
 
 
+@pytest.fixture(scope='function', autouse=True)
+def app_context(app):
+  # Push a fresh application context per test so Flask's `g` starts empty each
+  # time. The session-scoped `app` fixture keeps one long-lived context open for
+  # create_all/drop_all, and `g` is bound to the application context, so without
+  # a per-test context every test would share the same `g`. flask_wtf's
+  # generate_csrf caches its token in `g` and only writes the matching value to
+  # the session when it is absent; a leaked `g.csrf_token` makes the second test
+  # onward skip that session write, emit no session cookie, and fail CSRF
+  # validation on the next mutating request. A nested context gives each test its
+  # own `g` and is popped at teardown.
+  with app.app_context():
+    yield
+
+
 @pytest.fixture(scope='function')
 def db_session(app):
   # Run every test inside one connection-level transaction that is rolled back
