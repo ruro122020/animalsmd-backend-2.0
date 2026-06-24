@@ -60,3 +60,22 @@ def test_signup_duplicate_user_returns_422(client, test_user, csrf_token):
   )
   assert response.status_code == 422
   assert response.get_json() == {'error': 'Unproccessable Entity'}
+
+
+def test_signup_invalid_name_returns_422(client, db_session, csrf_token):
+  # The name validator requires a string longer than three characters; a short
+  # name raises ValueError, which the route surfaces as a 422 with that message.
+  response = client.post(
+    '/signup',
+    json={
+      'name': 'Jo',
+      'username': 'janedoe',
+      'email': 'janedoe@email.com',
+      'password': 'supersecret',
+    },
+    headers={'X-CSRFToken': csrf_token},
+  )
+  assert response.status_code == 422
+  assert response.get_json() == {
+    'error': 'Name must be of type string and more than 3 characters'
+  }
