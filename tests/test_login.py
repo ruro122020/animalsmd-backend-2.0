@@ -13,3 +13,15 @@ def test_login_valid_credentials_returns_200(client, test_user, csrf_token):
   body = response.get_json()
   assert body['username'] == TEST_USERNAME
   assert 'password' not in body
+
+
+def test_login_wrong_password_returns_401(client, test_user, csrf_token):
+  # A real username with the wrong password is rejected with the same generic
+  # message used for unknown users, so usernames cannot be enumerated.
+  response = client.post(
+    '/login',
+    json={'username': TEST_USERNAME, 'password': 'wrongpassword'},
+    headers={'X-CSRFToken': csrf_token},
+  )
+  assert response.status_code == 401
+  assert response.get_json() == {'error': 'Invalid Credentials'}
