@@ -7,3 +7,10 @@ def test_list_pets_returns_only_current_users_pets(auth_client, pet, other_pet):
   ids = [p['id'] for p in body]
   assert pet.id in ids
   assert other_pet.id not in ids
+
+
+def test_list_pets_unauthenticated_returns_401(client):
+  # The before_request auth hook is default-deny: without a logged-in session
+  # the list endpoint must reject the request rather than leak any pets.
+  response = client.get('/user/pets')
+  assert response.status_code == 401
