@@ -20,3 +20,10 @@ def test_view_pet_owned_by_another_user_returns_403(auth_client, other_pet):
   response = auth_client.get(f'/user/pets/{other_pet.id}')
   assert response.status_code == 403
   assert response.get_json() == {'error': 'Unauthorized'}
+
+
+def test_view_pet_unauthenticated_returns_401(client, pet):
+  # The default-deny auth hook rejects an unauthenticated read even though the
+  # pet exists.
+  response = client.get(f'/user/pets/{pet.id}')
+  assert response.status_code == 401
