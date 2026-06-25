@@ -97,3 +97,13 @@ def test_delete_pet_not_found_returns_404(auth_client, csrf_token):
   )
   assert response.status_code == 404
   assert response.get_json() == {'error': 'Pet does not exist'}
+
+
+def test_delete_pet_owned_by_another_user_returns_403(auth_client, csrf_token, other_pet):
+  # Ownership is enforced on delete: test_user cannot delete other_user's pet.
+  response = auth_client.delete(
+    f'/user/pets/{other_pet.id}',
+    headers={'X-CSRFToken': csrf_token},
+  )
+  assert response.status_code == 403
+  assert response.get_json() == {'error': 'Unauthorized'}
