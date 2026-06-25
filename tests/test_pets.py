@@ -37,3 +37,15 @@ def test_create_pet_happy_path_returns_200(auth_client, csrf_token, species, sym
   assert body['species_id'] == species.id
   symptom_names = [s['name'] for s in body['symptoms']]
   assert 'coughing' in symptom_names
+
+
+def test_create_pet_missing_body_returns_400(auth_client, csrf_token):
+  # An empty JSON object is falsy, so the route short-circuits with its own
+  # "info missing" 400 before any species or symptom lookup.
+  response = auth_client.post(
+    '/user/pets',
+    json={},
+    headers={'X-CSRFToken': csrf_token},
+  )
+  assert response.status_code == 400
+  assert response.get_json() == {'error': 'User pet info missing'}
