@@ -74,3 +74,16 @@ def test_update_pet_owned_by_another_user_returns_403(auth_client, csrf_token, o
   )
   assert response.status_code == 403
   assert response.get_json() == {'error': 'Unauthorized'}
+
+
+def test_delete_pet_happy_path_returns_200(auth_client, csrf_token, pet):
+  # The owner can delete their own pet; the row is gone afterward, so a follow-up
+  # read returns 404.
+  pet_id = pet.id
+  response = auth_client.delete(
+    f'/user/pets/{pet_id}',
+    headers={'X-CSRFToken': csrf_token},
+  )
+  assert response.status_code == 200
+  follow_up = auth_client.get(f'/user/pets/{pet_id}')
+  assert follow_up.status_code == 404
