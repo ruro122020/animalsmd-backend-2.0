@@ -61,3 +61,15 @@ def test_create_pet_missing_species_type_returns_400(auth_client, csrf_token):
   )
   assert response.status_code == 400
   assert response.get_json() == {'error': 'species type is missing'}
+
+
+def test_create_pet_missing_symptoms_returns_400(auth_client, csrf_token):
+  # Symptoms are required: a body with a type but no symptoms is rejected before
+  # the duplicate-name and species lookups.
+  response = auth_client.post(
+    '/user/pets',
+    json={'name': 'Buddy', 'age': 2, 'weight': 10, 'type': 'dog'},
+    headers={'X-CSRFToken': csrf_token},
+  )
+  assert response.status_code == 400
+  assert response.get_json() == {'error': 'symptoms are missing'}
