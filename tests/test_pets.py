@@ -109,3 +109,21 @@ def test_create_pet_unknown_species_returns_400(auth_client, csrf_token):
   )
   assert response.status_code == 400
   assert response.get_json() == {'error': 'species of pet does not exist'}
+
+
+def test_create_pet_unknown_symptom_returns_400(auth_client, csrf_token, species):
+  # The species exists so the route reaches symptom resolution, where an unknown
+  # symptom name fails the request before any pet row is created.
+  response = auth_client.post(
+    '/user/pets',
+    json={
+      'name': 'Buddy',
+      'age': 2,
+      'weight': 10,
+      'type': 'dog',
+      'symptoms': ['nonexistent'],
+    },
+    headers={'X-CSRFToken': csrf_token},
+  )
+  assert response.status_code == 400
+  assert 'symptom' in response.get_json()['error']
