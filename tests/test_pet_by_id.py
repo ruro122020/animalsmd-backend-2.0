@@ -52,3 +52,14 @@ def test_update_pet_happy_path_returns_200(auth_client, csrf_token, pet):
   assert body['weight'] == 25
   assert body['user_id'] == original_user_id
   assert body['species_id'] == original_species_id
+
+
+def test_update_pet_not_found_returns_404(auth_client, csrf_token):
+  # Patching a non-existent pet returns 404 before any field is touched.
+  response = auth_client.patch(
+    '/user/pets/999999',
+    json={'name': 'Ghost'},
+    headers={'X-CSRFToken': csrf_token},
+  )
+  assert response.status_code == 404
+  assert response.get_json() == {'error': 'Pet does not exist'}
