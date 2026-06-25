@@ -26,3 +26,11 @@ def test_pet_results_happy_path_returns_200(
   assert response.status_code == 200
   names = [illness['name'] for illness in response.get_json()]
   assert 'Kennel Cough' in names
+
+
+def test_pet_results_pet_not_found_returns_400(auth_client):
+  # The results endpoint reports a missing pet with 400 (not 404, unlike the other
+  # pet-by-id routes), short-circuiting before any classification lookup.
+  response = auth_client.get('/user/pets/999999/results')
+  assert response.status_code == 400
+  assert response.get_json() == {'error': 'pet id not found or pet does not exist'}
