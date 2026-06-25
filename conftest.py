@@ -139,3 +139,12 @@ def species(db_session):
   from models.models import Species
 
   return Species.create_row(type_name='dog')
+
+
+@pytest.fixture(scope='function')
+def symptom(db_session):
+  # A single symptom row used to attach to pets and to resolve symptom names in
+  # create-pet requests.
+  from models.models import Symptom
+
+  return Symptom.create_row(name='coughing')
