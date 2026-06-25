@@ -27,3 +27,28 @@ def test_view_pet_unauthenticated_returns_401(client, pet):
   # pet exists.
   response = client.get(f'/user/pets/{pet.id}')
   assert response.status_code == 401
+
+
+def test_update_pet_happy_path_returns_200(auth_client, csrf_token, pet):
+  # Only name/age/weight are updatable. The request also tries to reassign user_id
+  # and species_id, which the model whitelist must ignore to block mass-assignment.
+  original_user_id = pet.user_id
+  original_species_id = pet.species_id
+  response = auth_client.patch(
+    f'/user/pets/{pet.id}',
+    json={
+      'name': 'Rexy',
+      'age': 4,
+      'weight': 25,
+      'user_id': 999,
+      'species_id': 999,
+    },
+    headers={'X-CSRFToken': csrf_token},
+  )
+  assert response.status_code == 200
+  body = response.get_json()
+  assert body['name'] == 'Rexy'
+  assert body['age'] == 4
+  assert body['weight'] == 25
+  assert body['user_id'] == original_user_id
+  assert body['species_id'] == original_species_id
