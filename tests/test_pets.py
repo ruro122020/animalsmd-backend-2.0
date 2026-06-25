@@ -91,3 +91,21 @@ def test_create_pet_duplicate_name_returns_409(auth_client, csrf_token, pet, sym
   )
   assert response.status_code == 409
   assert response.get_json() == {'error': 'Pet already Exist'}
+
+
+def test_create_pet_unknown_species_returns_400(auth_client, csrf_token):
+  # A `type` that maps to no species row is rejected. No species fixture is needed
+  # precisely because the lookup must fail.
+  response = auth_client.post(
+    '/user/pets',
+    json={
+      'name': 'Buddy',
+      'age': 2,
+      'weight': 10,
+      'type': 'unicorn',
+      'symptoms': ['coughing'],
+    },
+    headers={'X-CSRFToken': csrf_token},
+  )
+  assert response.status_code == 400
+  assert response.get_json() == {'error': 'species of pet does not exist'}
