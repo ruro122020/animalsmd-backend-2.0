@@ -63,3 +63,14 @@ def test_update_pet_not_found_returns_404(auth_client, csrf_token):
   )
   assert response.status_code == 404
   assert response.get_json() == {'error': 'Pet does not exist'}
+
+
+def test_update_pet_owned_by_another_user_returns_403(auth_client, csrf_token, other_pet):
+  # Ownership is enforced on update: test_user cannot modify other_user's pet.
+  response = auth_client.patch(
+    f'/user/pets/{other_pet.id}',
+    json={'name': 'Hijacked'},
+    headers={'X-CSRFToken': csrf_token},
+  )
+  assert response.status_code == 403
+  assert response.get_json() == {'error': 'Unauthorized'}
