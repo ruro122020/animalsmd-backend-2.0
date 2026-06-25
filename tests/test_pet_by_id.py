@@ -87,3 +87,13 @@ def test_delete_pet_happy_path_returns_200(auth_client, csrf_token, pet):
   assert response.status_code == 200
   follow_up = auth_client.get(f'/user/pets/{pet_id}')
   assert follow_up.status_code == 404
+
+
+def test_delete_pet_not_found_returns_404(auth_client, csrf_token):
+  # Deleting a non-existent pet returns 404.
+  response = auth_client.delete(
+    '/user/pets/999999',
+    headers={'X-CSRFToken': csrf_token},
+  )
+  assert response.status_code == 404
+  assert response.get_json() == {'error': 'Pet does not exist'}
