@@ -177,3 +177,14 @@ def other_user(db_session):
   db_session.add(user)
   db_session.commit()
   return user
+
+
+@pytest.fixture(scope='function')
+def other_pet(db_session, other_user, species):
+  # A pet owned by other_user. auth_client (test_user) acting on this pet
+  # exercises the 403 ownership path.
+  from models.models import Pet
+
+  return Pet.create_row(
+    name='Spot', age=5, weight=15, species=species.id, user=other_user.id
+  )
