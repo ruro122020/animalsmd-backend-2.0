@@ -57,3 +57,10 @@ def test_pet_results_no_matching_illnesses_returns_404(
   response = auth_client.get(f'/user/pets/{pet.id}/results')
   assert response.status_code == 404
   assert response.get_json() == {'error': 'No Results found'}
+
+
+def test_pet_results_unauthenticated_returns_401(client, pet):
+  # The default-deny auth hook blocks the results endpoint for an unauthenticated
+  # session even though the pet exists.
+  response = client.get(f'/user/pets/{pet.id}/results')
+  assert response.status_code == 401
