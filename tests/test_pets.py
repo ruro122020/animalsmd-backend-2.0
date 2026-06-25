@@ -49,3 +49,15 @@ def test_create_pet_missing_body_returns_400(auth_client, csrf_token):
   )
   assert response.status_code == 400
   assert response.get_json() == {'error': 'User pet info missing'}
+
+
+def test_create_pet_missing_species_type_returns_400(auth_client, csrf_token):
+  # Without a `type` the route cannot resolve a species, so it rejects before
+  # touching the database.
+  response = auth_client.post(
+    '/user/pets',
+    json={'name': 'Buddy', 'age': 2, 'weight': 10, 'symptoms': ['coughing']},
+    headers={'X-CSRFToken': csrf_token},
+  )
+  assert response.status_code == 400
+  assert response.get_json() == {'error': 'species type is missing'}
