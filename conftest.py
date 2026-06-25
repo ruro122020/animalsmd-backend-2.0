@@ -129,3 +129,13 @@ def auth_client(client, test_user, csrf_token):
     headers={'X-CSRFToken': csrf_token},
   )
   return client
+
+
+@pytest.fixture(scope='function')
+def species(db_session):
+  # A single species row used to back pet fixtures and create requests. The
+  # type_name is lowercase because the create-pet route lowercases the incoming
+  # `type` before looking the species up.
+  from models.models import Species
+
+  return Species.create_row(type_name='dog')
