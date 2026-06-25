@@ -73,3 +73,21 @@ def test_create_pet_missing_symptoms_returns_400(auth_client, csrf_token):
   )
   assert response.status_code == 400
   assert response.get_json() == {'error': 'symptoms are missing'}
+
+
+def test_create_pet_duplicate_name_returns_409(auth_client, csrf_token, pet, symptom):
+  # Name uniqueness is scoped to the account. The `pet` fixture already owns a pet
+  # named "Rex" for test_user, so reusing that name is a conflict.
+  response = auth_client.post(
+    '/user/pets',
+    json={
+      'name': 'Rex',
+      'age': 1,
+      'weight': 5,
+      'type': 'dog',
+      'symptoms': ['coughing'],
+    },
+    headers={'X-CSRFToken': csrf_token},
+  )
+  assert response.status_code == 409
+  assert response.get_json() == {'error': 'Pet already Exist'}
