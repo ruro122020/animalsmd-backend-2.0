@@ -12,3 +12,11 @@ def test_view_pet_not_found_returns_404(auth_client):
   response = auth_client.get('/user/pets/999999')
   assert response.status_code == 404
   assert response.get_json() == {'error': 'Pet does not exist'}
+
+
+def test_view_pet_owned_by_another_user_returns_403(auth_client, other_pet):
+  # The pet exists but belongs to other_user, so test_user is forbidden from
+  # viewing it.
+  response = auth_client.get(f'/user/pets/{other_pet.id}')
+  assert response.status_code == 403
+  assert response.get_json() == {'error': 'Unauthorized'}
