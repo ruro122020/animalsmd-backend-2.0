@@ -42,3 +42,18 @@ def test_pet_results_owned_by_another_user_returns_403(auth_client, other_pet):
   response = auth_client.get(f'/user/pets/{other_pet.id}/results')
   assert response.status_code == 403
   assert response.get_json() == {'error': 'Unauthorized'}
+
+
+def test_pet_results_no_matching_illnesses_returns_404(
+  auth_client, db_session, pet, species
+):
+  # The pet's species needs a classification so the lookup does not crash, but the
+  # pet has no symptoms, so no illness matches and the endpoint reports 404.
+  from models.models import Classification, SpeciesClassification
+
+  classification = Classification.create_row(classification='mammal')
+  SpeciesClassification.create(species=species, classification=classification)
+
+  response = auth_client.get(f'/user/pets/{pet.id}/results')
+  assert response.status_code == 404
+  assert response.get_json() == {'error': 'No Results found'}
