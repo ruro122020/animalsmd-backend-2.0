@@ -127,3 +127,20 @@ def test_create_pet_unknown_symptom_returns_400(auth_client, csrf_token, species
   )
   assert response.status_code == 400
   assert 'symptom' in response.get_json()['error']
+
+
+def test_create_pet_unauthenticated_returns_401(client, csrf_token):
+  # A valid CSRF token clears the global CSRF check, so the request reaches the
+  # default-deny auth hook, which rejects it for having no logged-in session.
+  response = client.post(
+    '/user/pets',
+    json={
+      'name': 'Buddy',
+      'age': 2,
+      'weight': 10,
+      'type': 'dog',
+      'symptoms': ['coughing'],
+    },
+    headers={'X-CSRFToken': csrf_token},
+  )
+  assert response.status_code == 401
