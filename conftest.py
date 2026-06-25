@@ -148,3 +148,14 @@ def symptom(db_session):
   from models.models import Symptom
 
   return Symptom.create_row(name='coughing')
+
+
+@pytest.fixture(scope='function')
+def pet(db_session, test_user, species):
+  # A pet owned by test_user, so auth_client (logged in as test_user) is its
+  # owner. create_row takes the species and user as IDs.
+  from models.models import Pet
+
+  return Pet.create_row(
+    name='Rex', age=3, weight=20, species=species.id, user=test_user.id
+  )
