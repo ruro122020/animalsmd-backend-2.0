@@ -34,3 +34,11 @@ def test_pet_results_pet_not_found_returns_400(auth_client):
   response = auth_client.get('/user/pets/999999/results')
   assert response.status_code == 400
   assert response.get_json() == {'error': 'pet id not found or pet does not exist'}
+
+
+def test_pet_results_owned_by_another_user_returns_403(auth_client, other_pet):
+  # The ownership check runs before any classification work, so requesting another
+  # user's pet results is forbidden.
+  response = auth_client.get(f'/user/pets/{other_pet.id}/results')
+  assert response.status_code == 403
+  assert response.get_json() == {'error': 'Unauthorized'}
