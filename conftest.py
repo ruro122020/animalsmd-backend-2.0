@@ -159,3 +159,21 @@ def pet(db_session, test_user, species):
   return Pet.create_row(
     name='Rex', age=3, weight=20, species=species.id, user=test_user.id
   )
+
+
+@pytest.fixture(scope='function')
+def other_user(db_session):
+  # A second distinct user, used to assert ownership: auth_client is logged in as
+  # test_user, so acting on this user's pet must be rejected. Built with the same
+  # password-hash setter pattern as test_user.
+  from models.models import User
+
+  user = User(
+    name='Jane Doe',
+    username='janedoe',
+    email='janedoe@email.com',
+  )
+  user.password_hash = 'otherpassword123'
+  db_session.add(user)
+  db_session.commit()
+  return user
