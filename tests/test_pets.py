@@ -4,7 +4,7 @@ def test_list_pets_returns_only_current_users_pets(auth_client, pet, other_pet):
   response = auth_client.get('/user/pets')
   assert response.status_code == 200
   body = response.get_json()
-  ids = [p['id'] for p in body]
+  ids = [returned_pet['id'] for returned_pet in body]
   assert pet.id in ids
   assert other_pet.id not in ids
 
@@ -35,7 +35,7 @@ def test_create_pet_happy_path_returns_200(auth_client, csrf_token, species, sym
   body = response.get_json()
   assert body['name'] == 'Buddy'
   assert body['species_id'] == species.id
-  symptom_names = [s['name'] for s in body['symptoms']]
+  symptom_names = [returned_symptom['name'] for returned_symptom in body['symptoms']]
   assert 'coughing' in symptom_names
 
 
