@@ -1,18 +1,19 @@
+from models.models import (
+  Classification,
+  Illness,
+  IllnessClassification,
+  IllnessSymptom,
+  PetSymptom,
+  SpeciesClassification,
+)
+
+
 def test_pet_results_happy_path_returns_200(
   auth_client, db_session, pet, species, symptom
 ):
   # The results endpoint walks a full chain: the pet's symptom -> illnesses with
   # that symptom, intersected with illnesses whose classification matches the
   # pet's species classification. Build that chain so a matching illness exists.
-  from models.models import (
-    Illness,
-    IllnessSymptom,
-    Classification,
-    SpeciesClassification,
-    IllnessClassification,
-    PetSymptom,
-  )
-
   PetSymptom.create_row(pet=pet, symptom=symptom)
   illness = Illness.create_row(
     name='Kennel Cough', description='A respiratory infection', remedy='Rest'
@@ -49,8 +50,6 @@ def test_pet_results_no_matching_illnesses_returns_404(
 ):
   # The pet's species needs a classification so the lookup does not crash, but the
   # pet has no symptoms, so no illness matches and the endpoint reports 404.
-  from models.models import Classification, SpeciesClassification
-
   classification = Classification.create_row(classification='mammal')
   SpeciesClassification.create(species=species, classification=classification)
 
