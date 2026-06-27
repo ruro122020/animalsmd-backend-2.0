@@ -11,6 +11,11 @@ from config import app as flask_app, db, limiter
 # every route, and installs the auth before_request hook and CSRF error handler.
 import app as _app_module
 
+# Model classes referenced by the fixtures below. The app import above already
+# registered them on db.metadata; this only binds the names into this module's
+# namespace so the fixtures can reference them directly.
+from models.models import Pet, Species, Symptom, User
+
 # Single source of truth for the test login. test_user inserts this user and
 # auth_client logs in with these same credentials. Keeping them here avoids
 # duplicating the literals across fixtures where a typo would silently break login.
@@ -102,8 +107,6 @@ def client(app):
 
 @pytest.fixture(scope='function')
 def test_user(db_session):
-  from models.models import User
-
   user = User(
     name='John Smith',
     username=TEST_USERNAME,
@@ -129,3 +132,52 @@ def auth_client(client, test_user, csrf_token):
     headers={'X-CSRFToken': csrf_token},
   )
   return client
+
+
+@pytest.fixture(scope='function')
+def species(db_session):
+  # A single species row used to back pet fixtures and create requests. The
+  # type_name is lowercase because the create-pet route lowercases the incoming
+  # `type` before looking the species up.
+  return Species.create_row(type_name='dog')
+
+
+@pytest.fixture(scope='function')
+def symptom(db_session):
+  # A single symptom row used to attach to pets and to resolve symptom names in
+  # create-pet requests.
+  return Symptom.create_row(name='coughing')
+
+
+@pytest.fixture(scope='function')
+def pet(db_session, test_user, species):
+  # A pet owned by test_user, so auth_client (logged in as test_user) is its
+  # owner. create_row takes the species and user as IDs.
+  return Pet.create_row(
+    name='Rex', age=3, weight=20, species=species.id, user=test_user.id
+  )
+
+
+@pytest.fixture(scope='function')
+def other_user(db_session):
+  # A second distinct user, used to assert ownership: auth_client is logged in as
+  # test_user, so acting on this user's pet must be rejected. Built with the same
+  # password-hash setter pattern as test_user.
+  user = User(
+    name='Jane Doe',
+    username='janedoe',
+    email='janedoe@email.com',
+  )
+  user.password_hash = 'otherpassword123'
+  db_session.add(user)
+  db_session.commit()
+  return user
+
+
+@pytest.fixture(scope='function')
+def other_pet(db_session, other_user, species):
+  # A pet owned by other_user. auth_client (test_user) acting on this pet
+  # exercises the 403 ownership path.
+  return Pet.create_row(
+    name='Spot', age=5, weight=15, species=species.id, user=other_user.id
+  )
