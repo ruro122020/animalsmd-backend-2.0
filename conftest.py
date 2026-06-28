@@ -14,7 +14,7 @@ import app as _app_module
 # Model classes referenced by the fixtures below. The app import above already
 # registered them on db.metadata; this only binds the names into this module's
 # namespace so the fixtures can reference them directly.
-from models.models import Pet, Species, Symptom, User
+from models.models import Cart, Pet, Product, Species, Symptom, User
 
 # Single source of truth for the test login. test_user inserts this user and
 # auth_client logs in with these same credentials. Keeping them here avoids
@@ -181,3 +181,41 @@ def other_pet(db_session, other_user, species):
   return Pet.create_row(
     name='Spot', age=5, weight=15, species=species.id, user=other_user.id
   )
+
+
+@pytest.fixture(scope='function')
+def product(db_session):
+  # A single product used to back cart fixtures and add-to-cart requests.
+  # create_row takes the column values directly.
+  return Product.create_row(
+    name='Flea Medicine',
+    price=20,
+    description='Kills fleas on contact',
+    prescription=False,
+  )
+
+
+@pytest.fixture(scope='function')
+def other_product(db_session):
+  # A second distinct product, so an add-to-cart request can reference a product
+  # that is not already in the cart without colliding with the `product` fixture.
+  return Product.create_row(
+    name='Heartworm Pills',
+    price=35,
+    description='Monthly heartworm prevention',
+    prescription=True,
+  )
+
+
+@pytest.fixture(scope='function')
+def cart_item(db_session, test_user, product):
+  # A cart row owned by test_user, so auth_client (logged in as test_user) is its
+  # owner. Cart.create_row takes the user and product objects plus a quantity.
+  return Cart.create_row(test_user, product, 2)
+
+
+@pytest.fixture(scope='function')
+def other_cart_item(db_session, other_user, other_product):
+  # A cart row owned by other_user. auth_client (test_user) acting on this row
+  # exercises the 403 ownership path on the cart item resource.
+  return Cart.create_row(other_user, other_product, 1)
