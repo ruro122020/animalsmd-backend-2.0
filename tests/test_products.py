@@ -18,3 +18,9 @@ def test_get_product_by_id_happy_path_returns_200(client, product):
   response = client.get(f'/products/{product.id}')
   assert response.status_code == 200
   assert response.get_json()['id'] == product.id
+
+
+def test_get_product_by_id_not_found_returns_404(client, db_session):
+  response = client.get('/products/999999')
+  assert response.status_code == 404
+  assert response.get_json() == {'error': 'Product not found'}
