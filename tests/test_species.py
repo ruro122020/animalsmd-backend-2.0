@@ -9,11 +9,13 @@ def test_list_species_happy_path_returns_200(client, species):
   assert species.id in ids
 
 
-def test_list_species_empty_returns_404(client, db_session):
-  # With no species rows, the endpoint reports the empty table as a 404.
+def test_list_species_empty_returns_200_empty_list(client, db_session):
+  # A successful read of an empty collection is 200 with an empty list, not 404.
+  # /species is a valid collection that exists; having no rows is not a missing
+  # resource. Currently fails: the route returns 404 {'error': 'No species found'}.
   response = client.get('/species')
-  assert response.status_code == 404
-  assert response.get_json() == {'error': 'No species found'}
+  assert response.status_code == 200
+  assert response.get_json() == []
 
 
 def test_get_species_by_type_happy_path_returns_200(
@@ -45,19 +47,21 @@ def test_get_species_by_type_unknown_type_returns_404(client, db_session):
   assert response.get_json() == {'error': 'Species not found'}
 
 
-def test_get_species_by_type_missing_species_classification_returns_404(client, species):
-  # The species exists but has no SpeciesClassification row, so the chain breaks
-  # at the classification lookup.
+def test_get_species_by_type_missing_species_classification_returns_500(client, species):
+  # The species 'dog' exists, so this is not a missing resource (404). The request
+  # fails because the server's own related data is incomplete, which is a
+  # server-side data-integrity error -> 500. Currently fails: the route returns
+  # 404 {'error': 'SpeciesClassification not found'}.
   response = client.get('/species/dog')
-  assert response.status_code == 404
-  assert response.get_json() == {'error': 'SpeciesClassification not found'}
+  assert response.status_code == 500
 
 
-def test_get_species_by_type_missing_symptom_classification_returns_404(
+def test_get_species_by_type_missing_symptom_classification_returns_500(
   client, species_classification
 ):
-  # Species, classification, and SpeciesClassification exist, but the classification
-  # has no SymptomClassification rows, so the chain breaks at the symptom lookup.
+  # Species, classification, and SpeciesClassification exist, so the addressed
+  # species is present. Missing SymptomClassification rows are incomplete server
+  # data, not a missing resource -> 500. Currently fails: the route returns
+  # 404 {'error': 'SymptomClassification not found'}.
   response = client.get('/species/dog')
-  assert response.status_code == 404
-  assert response.get_json() == {'error': 'SymptomClassification not found'}
+  assert response.status_code == 500
