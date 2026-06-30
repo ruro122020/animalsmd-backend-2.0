@@ -14,3 +14,25 @@ def test_list_species_empty_returns_404(client, db_session):
   response = client.get('/species')
   assert response.status_code == 404
   assert response.get_json() == {'error': 'No species found'}
+
+
+def test_get_species_by_type_happy_path_returns_200(
+  client, classification, species_classification, symptom_classification
+):
+  # The full chain (species -> species_classification -> classification ->
+  # symptom_classification) resolves to the classification name and its symptoms.
+  response = client.get('/species/dog')
+  assert response.status_code == 200
+  body = response.get_json()
+  assert body['classification'] == 'mammal'
+  assert 'coughing' in body['symptoms']
+  assert body['classification_id'] == classification.id
+
+
+def test_get_species_by_type_is_case_insensitive_returns_200(
+  client, classification, species_classification, symptom_classification
+):
+  # The route lowercases type_name, so an uppercase request resolves the same row.
+  response = client.get('/species/DOG')
+  assert response.status_code == 200
+  assert response.get_json()['classification'] == 'mammal'
