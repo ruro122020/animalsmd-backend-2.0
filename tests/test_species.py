@@ -36,3 +36,28 @@ def test_get_species_by_type_is_case_insensitive_returns_200(
   response = client.get('/species/DOG')
   assert response.status_code == 200
   assert response.get_json()['classification'] == 'mammal'
+
+
+def test_get_species_by_type_unknown_type_returns_404(client, db_session):
+  # A type that maps to no species row short-circuits at the species lookup.
+  response = client.get('/species/unicorn')
+  assert response.status_code == 404
+  assert response.get_json() == {'error': 'Species not found'}
+
+
+def test_get_species_by_type_missing_species_classification_returns_404(client, species):
+  # The species exists but has no SpeciesClassification row, so the chain breaks
+  # at the classification lookup.
+  response = client.get('/species/dog')
+  assert response.status_code == 404
+  assert response.get_json() == {'error': 'SpeciesClassification not found'}
+
+
+def test_get_species_by_type_missing_symptom_classification_returns_404(
+  client, species_classification
+):
+  # Species, classification, and SpeciesClassification exist, but the classification
+  # has no SymptomClassification rows, so the chain breaks at the symptom lookup.
+  response = client.get('/species/dog')
+  assert response.status_code == 404
+  assert response.get_json() == {'error': 'SymptomClassification not found'}
