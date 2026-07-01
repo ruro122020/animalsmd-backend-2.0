@@ -14,7 +14,17 @@ import app as _app_module
 # Model classes referenced by the fixtures below. The app import above already
 # registered them on db.metadata; this only binds the names into this module's
 # namespace so the fixtures can reference them directly.
-from models.models import Cart, Pet, Product, Species, Symptom, User
+from models.models import (
+  Cart,
+  Classification,
+  Pet,
+  Product,
+  Species,
+  SpeciesClassification,
+  Symptom,
+  SymptomClassification,
+  User,
+)
 
 # Single source of truth for the test login. test_user inserts this user and
 # auth_client logs in with these same credentials. Keeping them here avoids
@@ -147,6 +157,26 @@ def symptom(db_session):
   # A single symptom row used to attach to pets and to resolve symptom names in
   # create-pet requests.
   return Symptom.create_row(name='coughing')
+
+
+@pytest.fixture(scope='function')
+def classification(db_session):
+  # A single classification row ('mammal') used to wire the species-by-type chain.
+  return Classification.create_row(classification='mammal')
+
+
+@pytest.fixture(scope='function')
+def species_classification(db_session, species, classification):
+  # Links the `species` (dog) to the `classification` (mammal) so the by_type
+  # route can resolve a species to its classification.
+  return SpeciesClassification.create(species=species, classification=classification)
+
+
+@pytest.fixture(scope='function')
+def symptom_classification(db_session, classification, symptom):
+  # Links the `classification` (mammal) to the `symptom` (coughing) so the
+  # by_type route returns a non-empty symptoms list.
+  return SymptomClassification.create_row(classification, symptom)
 
 
 @pytest.fixture(scope='function')
