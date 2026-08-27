@@ -18,18 +18,18 @@ class SpeciesByType(Resource):
     
     #query speciesclassification table to find what classification species is from 
     species_classification = SpeciesClassification.query.filter_by(species_id = species.id).first()
-    #return error if not found
+    #a species with no classification is broken reference data, not a client error
     if not species_classification:
-      return {"error": "SpeciesClassification not found"}, 404
+      return {"error": "Internal Server Error"}, 500
     
     #assign the classification obj, queried through species_classification
     classification_inst = species_classification.classification
 
     #query symptomsclassification table using the classification_inst obj to get a list of symptoms of the classification 
     classification_symptoms = SymptomClassification.query.filter_by(classification = classification_inst).all()
-    #return error if not found
+    #a classification with no symptoms is broken reference data, not a client error
     if not classification_symptoms:
-      return {"error": "SymptomClassification not found"}, 404
+      return {"error": "Internal Server Error"}, 500
     
     # classification_symptoms data structure is an array these: 
     # {
@@ -43,7 +43,6 @@ class SpeciesByType(Resource):
     #     },
     #     "id": 2
     # }
-    #Therefore we must iterate through and format the object how we want to send back. 
     # Data structure to return:
     # {
     #   "classification":"mammal",
