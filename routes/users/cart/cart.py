@@ -40,14 +40,10 @@ class CartResource(Resource):
     return {"error": "Cart Not Added"}, 400
   
   def delete(self):
-    user_session_id = session.get('user_id')
-    if user_session_id:
-      carts = Cart.query.filter_by(user_id = user_session_id).all()
-      if carts:
-        for cart in carts:
-          cart.delete_db()
-        return {}, 200
-    return {"error": "Products don't exist"}, 400
+    cart_items = Cart.query.filter_by(user_id=session.get('user_id')).all()
+    for cart_item in cart_items:
+      cart_item.delete_db()
+    return {}, 200
     
 
 api.add_resource(CartResource, '/user/cart', endpoint='user_cart')
