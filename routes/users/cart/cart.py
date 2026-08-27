@@ -38,7 +38,7 @@ class CartResource(Resource):
         return cart_schema.dump(cart), 200
       except Exception as e:
         db.session.rollback()
-        return {"error": str(e)}, 400
+        return {"error": "Unproccessable Entity"}, 400
     return {"error": "Cart Not Added"}, 400
   
   def delete(self):
