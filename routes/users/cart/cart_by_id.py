@@ -8,7 +8,7 @@ class CartByID(Resource):
   def patch(self, id):
     cart = Cart.query.filter_by(id=id).first()
     if not cart:
-      return {"error": "Cart does not exist"}, 400
+      return {"error": "Cart does not exist"}, 404
     if cart.user_id != session.get('user_id'):
       return {"error": "Unauthorized"}, 403
 
@@ -19,7 +19,7 @@ class CartByID(Resource):
   def delete(self, id):
     cart = Cart.query.filter_by(id=id).first()
     if not cart:
-      return {"error": "Cart does not exist"}, 400
+      return {"error": "Cart does not exist"}, 404
     if cart.user_id != session.get('user_id'):
       return {"error": "Unauthorized"}, 403
 
