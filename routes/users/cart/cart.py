@@ -26,14 +26,14 @@ class CartResource(Resource):
         
         #check if product already exist in user's cart
         if product in user.cart_products:          
-          return {"error":"Product already exist in user's cart"},  403
-        
+          return {"error":"Product already exist in user's cart"}, 409
+
         quantity = json.get('quantity')
         if not isinstance(quantity, int) or quantity < 1:
-          return {"error": "quantity must be a positive integer"}, 400
+          return {"error": "quantity must be a positive integer"}, 422
 
         cart = Cart.create_row(user, product, quantity)
-        return cart_schema.dump(cart), 200
+        return cart_schema.dump(cart), 201
       except Exception as e:
         db.session.rollback()
         return {"error": "Unproccessable Entity"}, 400
