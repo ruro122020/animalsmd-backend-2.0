@@ -8,9 +8,7 @@ from marshmallow_schemas.product import product_schema
 class CartResource(Resource):
   def get(self):
     carts = Cart.query.filter_by(user_id=session.get('user_id')).order_by(Cart.id).all()
-    if carts:
-      return cart_schema_many.dump(carts), 200
-    return {"error": "There are no products in user's cart"}, 404
+    return cart_schema_many.dump(carts), 200
 
   def post(self):
     json = request.get_json()
