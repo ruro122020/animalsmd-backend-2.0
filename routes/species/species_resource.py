@@ -8,8 +8,6 @@ from marshmallow_schemas.species import species_schema_many
 class SpeciesResource(Resource):
   def get(self):
     species = Species.query.all()
-    if not species:
-      return {"error": "No species found"}, 404
     return species_schema_many.dump(species), 200
 
 
