@@ -1,4 +1,20 @@
+import pytest
+
+from config import limiter
 from conftest import TEST_USERNAME, TEST_PASSWORD
+
+
+@pytest.fixture(scope='function')
+def rate_limited():
+  # The session-wide app fixture turns the limiter off so auth_client's per-test
+  # login never trips the 5/min cap. Turn it back on for one test only, starting
+  # from empty storage so earlier requests do not count, and switch it off again
+  # at teardown (the yield guarantees this runs even if the test fails).
+  limiter.enabled = True
+  limiter.reset()
+  yield
+  limiter.reset()
+  limiter.enabled = False
 
 
 def test_login_valid_credentials_returns_200(client, test_user, csrf_token):
@@ -37,3 +53,19 @@ def test_login_missing_credentials_returns_401(client, csrf_token):
   )
   assert response.status_code == 401
   assert response.get_json() == {'error': 'Invalid Credentials'}
+
+
+def test_login_rate_limited_returns_429(rate_limited, client, test_user, csrf_token):
+  for _ in range(5):
+    response = client.post(
+      '/login',
+      json={'username': TEST_USERNAME, 'password': TEST_PASSWORD},
+      headers={'X-CSRFToken': csrf_token},
+    )
+    assert response.status_code == 200
+  response = client.post(
+    '/login',
+    json={'username': TEST_USERNAME, 'password': TEST_PASSWORD},
+    headers={'X-CSRFToken': csrf_token},
+  )
+  assert response.status_code == 429
